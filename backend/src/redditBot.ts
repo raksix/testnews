@@ -28,6 +28,7 @@ interface RedditToken {
 }
 
 async function searchImage(query: string): Promise<string> {
+  // Try SearXNG JSON API first
   try {
     const res = await fetch(
       `${SEARXNG_URL}/search?q=${encodeURIComponent(query)}&categories=images&format=json`,
@@ -37,12 +38,15 @@ async function searchImage(query: string): Promise<string> {
       const data = await res.json();
       const results = data?.results || [];
       for (const r of results.slice(0, 5)) {
-        if (r.img_src && r.img_src.startsWith("http")) return r.img_src;
-        if (r.thumbnail_src && r.thumbnail_src.startsWith("http")) return r.thumbnail_src;
+        const url = r.img_src || r.thumbnail_src || "";
+        if (!url.startsWith("http")) continue;
+        // Download and convert to base64 data URI
+        const downloaded = await downloadImageAsDataUri(url);
+        if (downloaded) return downloaded;
       }
     }
   } catch {}
-  // Fallback: try HTML parse
+  // Fallback: HTML parse
   try {
     const res = await fetch(
       `${SEARXNG_URL}/search?q=${encodeURIComponent(query)}&categories=images`,
@@ -51,9 +55,32 @@ async function searchImage(query: string): Promise<string> {
     const html = await res.text();
     const match = html.match(/data-src="(https?:\/\/[^"']+\.(jpg|jpeg|png|webp))/i)
       || html.match(/src="(https?:\/\/[^"']+\.(jpg|jpeg|png|webp))/i);
-    if (match) return match[1];
+    if (match) {
+      const downloaded = await downloadImageAsDataUri(match[1]);
+      if (downloaded) return downloaded;
+    }
   } catch {}
   return "";
+}
+
+async function downloadImageAsDataUri(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(15_000),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; TestNewsBot/1.0)" },
+    });
+    if (!res.ok) return "";
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const mime = contentType.split(";")[0].trim();
+    // Only accept raster formats (skip svg etc)
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mime)) return "";
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length > 5_000_000) return ""; // skip images > 5MB
+    const base64 = buffer.toString("base64");
+    return `data:${mime};base64,${base64}`;
+  } catch {
+    return "";
+  }
 }
 
 function loadRedditToken(): RedditToken | null {
@@ -172,9 +199,18 @@ export async function runRedditFetch(): Promise<FetchResult> {
           const rewritten = await aiRewrite(post.title, post.selftext || "", sub);
 
           // Search image if AI provided a query and post has no image
-          let imageUrl = post.url && post.url.startsWith("http") && !post.is_self ? post.url : "";
+          let imageUrl = "";
+          const postImage = post.url && post.url.startsWith("http") && !post.is_self ? post.url : "";
+          if (postImage) {
+            // Download post image directly
+            imageUrl = await downloadImageAsDataUri(postImage) || "";
+          }
           if (!imageUrl && rewritten.imageQuery) {
             imageUrl = await searchImage(rewritten.imageQuery);
+          }
+          // Fallback: search using the title itself
+          if (!imageUrl) {
+            imageUrl = await searchImage(rewritten.title);
           }
 
           // Add source URL to content
