@@ -128,7 +128,7 @@ export default async function HomePage() {
   const byCategory = new Map<string, NewsItem[]>();
   for (const item of rest) {
     const arr = byCategory.get(item.category) || [];
-    if (arr.length < 3) arr.push(item);
+    if (arr.length < 5) arr.push(item);
     byCategory.set(item.category, arr);
   }
 
