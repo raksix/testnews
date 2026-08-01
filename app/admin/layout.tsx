@@ -37,6 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-surface">
+      <style>{"header, nav:first-of-type, footer { display: none !important; }"}</style>
       <AdminSidebar apiKey={apiKey} />
       <main className="ml-60 transition-all duration-300">
         <div className="p-6">
