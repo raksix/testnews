@@ -88,24 +88,11 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   const settings = await getSettings();
   const model = settings.reddit.model;
 
-  const prompt = `You are a news editor for an English news website. Rewrite this Reddit post into a proper news article.
+  const selftextInfo = selftext ? `\nBODY: ${selftext.slice(0, 4000)}` : "";
+  const sourceInfo = title ? `\nPOST TITLE: ${title}` : "";
+  const subredditHint = subreddit ? `\nPosts are from r/${subreddit}. Rewrite as original reporting.` : "";
 
-SOURCE (from r/${subreddit}):
-TITLE: ${title}
-BODY: ${(selftext || "(no body text — expand from the title)").slice(0, 4000)}
-
-RULES:
-- Write in ENGLISH
-- Create an engaging news headline (max 12 words)
-- Write a 2-3 sentence summary (excerpt)
-- Write a full article of 4-6 short paragraphs (## headings allowed, keep it structured)
-- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"
-- Treat it as original reporting
-- Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment
-- Image query: a short 3-5 word English search query for a relevant stock photo (e.g. "artificial intelligence chip")
-
-Respond with ONLY valid JSON (no markdown fences):
-{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+  const prompt = `You are a news editor for an English news website. Rewrite this Reddit post into a proper news article.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 12 words)\n- Write a 2-3 sentence summary (excerpt)\n- Write a full article of 4-6 short paragraphs (## headings allowed)\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"\n- Treat it as original reporting\n- Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment\n- Image query: a short 3-5 word English search query for a relevant stock photo (e.g. "artificial intelligence chip")\n\nRespond with ONLY valid JSON (no markdown fences):\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
 
   const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
     method: "POST",
@@ -173,7 +160,6 @@ export async function runRedditFetch(): Promise<FetchResult> {
 
         // Filters
         if (post.ups < cfg.minUps) continue;
-        if (post.is_self === false && !post.selftext) continue; // skip pure link/image posts without body
         const ageMs = Date.now() - post.created_utc * 1000;
         if (ageMs > cfg.maxAgeHours * 3600_000) continue;
 
@@ -191,11 +177,14 @@ export async function runRedditFetch(): Promise<FetchResult> {
             imageUrl = await searchImage(rewritten.imageQuery);
           }
 
+          // Add source URL to content
+          const contentWithSource = rewritten.content + (post.url ? `\n\n---\n\n[Read original article](${post.url})` : "");
+
           const article = await createNews({
             slug: `${slugify(rewritten.title)}-${post.id.slice(0, 6)}`,
             title: rewritten.title,
             excerpt: rewritten.excerpt,
-            content: rewritten.content,
+            content: contentWithSource,
             category: rewritten.category,
             image: imageUrl,
             author: `TestNews Desk`,
