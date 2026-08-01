@@ -153,10 +153,10 @@ app.get("/api/admin/comments", async (req, reply) => {
 });
 
 // Admin auth
-app.post("/api/admin/auth", async (req) => {
+app.post("/api/admin/auth", async (req, reply) => {
   const body = (req.body || {}) as { key?: string };
   if (body.key === ADMIN_KEY) return { ok: true };
-  return { error: "Invalid key" };
+  return reply.code(401).send({ error: "Invalid key" });
 });
 
 // Create

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { API_URL } from "@/lib/api";
 
 const inputCls = "w-full bg-surface2 border border-borderc rounded-lg px-4 py-3 text-sm text-textc placeholder-mutedc focus:outline-none focus:border-red-500 transition";
 
@@ -14,7 +15,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3013"}/api/admin/auth`, {
+      const res = await fetch(`${API_URL}/api/admin/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key }),
