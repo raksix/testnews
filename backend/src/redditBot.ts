@@ -158,7 +158,7 @@ export async function runRedditFetch(): Promise<FetchResult> {
             content: rewritten.content,
             category: rewritten.category,
             image: post.url && (post.url.startsWith("http") && !post.is_self) ? post.url : "",
-            author: `r/${sub} via TestNews AI`,
+            author: `TestNews Desk`,
             featured: false,
             publishedAt: new Date().toISOString(),
           });
