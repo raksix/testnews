@@ -158,6 +158,67 @@ export function slugify(text: string): string {
     .slice(0, 80);
 }
 
+export interface Settings {
+  _id?: ObjectId;
+  key: string;
+  value: unknown;
+  updatedAt?: string;
+}
+
+export const DEFAULT_SETTINGS = {
+  reddit: {
+    subreddits: [
+      "technology",
+      "worldnews",
+      "science",
+      "space",
+      "business",
+      "economy",
+      "gadgets",
+      "artificial",
+      "Futurology",
+      "Health",
+    ],
+    model: "oc/deepseek-v4-flash-free",
+    intervalMinutes: 60,
+    enabled: true,
+    postsPerSubreddit: 3,
+    minUps: 100,
+    maxAgeHours: 24,
+  },
+} as const;
+
+export async function getSettings(): Promise<typeof DEFAULT_SETTINGS> {
+  const db = await getDb();
+  const col = db.collection<Settings>("settings");
+  const merged = structuredClone(DEFAULT_SETTINGS) as Record<string, unknown>;
+  for (const key of Object.keys(merged)) {
+    const row = await col.findOne({ key });
+    if (row && typeof row.value === "object" && row.value !== null) {
+      (merged as any)[key] = { ...(merged as any)[key], ...row.value };
+    }
+  }
+  return merged as unknown as typeof DEFAULT_SETTINGS;
+}
+
+export async function updateSettings(
+  key: string,
+  value: unknown
+): Promise<void> {
+  const db = await getDb();
+  await db.collection<Settings>("settings").updateOne(
+    { key },
+    { $set: { value, updatedAt: new Date().toISOString() } },
+    { upsert: true }
+  );
+}
+
+export async function redditPostExists(redditId: string): Promise<boolean> {
+  const db = await getDb();
+  const doc = await db.collection("news").findOne({ redditId });
+  return Boolean(doc);
+}
+
 export interface Comment {
   _id?: ObjectId;
   id?: string;

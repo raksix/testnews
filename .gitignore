@@ -12,3 +12,4 @@ data/*.db-shm
 
 backend/node_modules
 backend/dist
+node_modules/\nbackend/node_modules/\nbackend/dist/\n*.db

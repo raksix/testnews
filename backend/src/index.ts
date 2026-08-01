@@ -11,8 +11,11 @@ import {
   deleteNews,
   listComments,
   createComment,
+  getSettings,
+  updateSettings,
   slugify,
 } from "./db.js";
+import { runRedditFetch } from "./redditBot.js";
 
 const PORT = Number(process.env.PORT || 3013);
 const ADMIN_KEY = process.env.ADMIN_KEY || "testnews-admin-2026";
@@ -129,9 +132,98 @@ app.delete<{ Params: { id: string } }>(
   }
 );
 
+// Settings
+app.get("/api/admin/settings", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  return { settings: await getSettings() };
+});
+
+app.put("/api/admin/settings", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  const body = (req.body || {}) as Record<string, unknown>;
+  if (body.reddit && typeof body.reddit === "object") {
+    await updateSettings("reddit", body.reddit);
+  }
+  return { settings: await getSettings() };
+});
+
+// Reddit bot: manual trigger
+app.post("/api/admin/reddit/fetch", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  try {
+    const result = await runRedditFetch();
+    return { result };
+  } catch (err) {
+    return reply.code(500).send({
+      error: err instanceof Error ? err.message : "Reddit fetch failed",
+    });
+  }
+});
+
+// Available AI models from OmniRoute
+app.get("/api/admin/models", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  try {
+    const res = await fetch(
+      `${process.env.OMNIROUTE_URL || "https://omniroute.fermag.com.tr/v1"}/models`,
+      { headers: { Authorization: `Bearer ${process.env.OMNIROUTE_KEY || ""}` } }
+    );
+    if (!res.ok) return reply.code(502).send({ error: "Failed to fetch models" });
+    const data = await res.json();
+    const ids = (data?.data || []).map((m: { id: string }) => m.id);
+    return { models: ids };
+  } catch {
+    return reply.code(502).send({ error: "Failed to fetch models" });
+  }
+});
+
 try {
   await app.listen({ port: PORT, host: "0.0.0.0" });
 } catch (err) {
   app.log.error(err);
   process.exit(1);
 }
+
+// Scheduled Reddit fetch — checks every minute whether interval has elapsed
+let lastFetchAt = 0;
+let fetchInProgress = false;
+
+async function scheduledFetch() {
+  if (fetchInProgress) return;
+  fetchInProgress = true;
+  try {
+    app.log.info("Scheduled Reddit fetch started");
+    const result = await runRedditFetch();
+    app.log.info(
+      `Scheduled Reddit fetch done: created=${result.created} skipped=${result.skipped} errors=${result.errors.length}`
+    );
+  } catch (err) {
+    app.log.error(`Scheduled Reddit fetch failed: ${err}`);
+  } finally {
+    fetchInProgress = false;
+  }
+}
+
+setInterval(async () => {
+  try {
+    const settings = await getSettings();
+    if (!settings.reddit.enabled) return;
+    const intervalMs = settings.reddit.intervalMinutes * 60_000;
+    if (Date.now() - lastFetchAt >= intervalMs) {
+      lastFetchAt = Date.now();
+      scheduledFetch();
+    }
+  } catch {}
+}, 60_000);

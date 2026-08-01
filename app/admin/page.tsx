@@ -44,7 +44,10 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key }),
     });
-    if (res.ok) { setAuthed(true); setMsg(null); } else { setMsg({ type: "err", text: "Invalid admin key" }); }
+    if (res.ok) {
+      localStorage.setItem("admin_key", key);
+      setAuthed(true); setMsg(null);
+    } else { setMsg({ type: "err", text: "Invalid admin key" }); }
   };
 
   const save = async (e: React.FormEvent) => {
@@ -131,6 +134,13 @@ export default function AdminPage() {
             {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(EMPTY); }} className="px-4 py-2.5 border border-borderc text-mutedc rounded-lg hover:bg-surface2 transition text-sm">Cancel</button>}
           </div>
         </form>
+
+        {/* Reddit Bot Panel */}
+        <div className="rounded-xl border border-borderc bg-surface2/40 p-6 h-fit">
+          <h2 className="text-lg font-bold text-textc mb-3">Reddit Bot</h2>
+          <p className="text-sm text-mutedc mb-4">Auto-fetch and rewrite Reddit posts into news articles with AI.</p>
+          <a href="/admin/reddit" className="block w-full text-center bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-lg transition text-sm">Open Reddit Bot →</a>
+        </div>
 
         <div className="rounded-xl border border-borderc bg-surface2/40 p-6 h-fit">
           <h2 className="text-lg font-bold text-textc mb-4">Articles ({news.length})</h2>
