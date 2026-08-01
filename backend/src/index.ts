@@ -127,6 +127,31 @@ app.delete<{ Params: { id: string } }>(
   }
 );
 
+// All comments with article titles (admin, single request)
+app.get("/api/admin/comments", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  const db = await getDb();
+  const comments = await db
+    .collection("comments")
+    .find({})
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .toArray();
+  // Attach article title for each comment
+  const slugs = [...new Set(comments.map((c: any) => c.newsSlug))];
+  const articles = await db
+    .collection("news")
+    .find({ slug: { $in: slugs } }, { projection: { slug: 1, title: 1 } })
+    .toArray();
+  const titleMap = new Map(articles.map((a: any) => [a.slug, a.title]));
+  return {
+    comments: comments.map((c: any) => ({ ...c, articleTitle: titleMap.get(c.newsSlug) || c.newsSlug })),
+  };
+});
+
 // Admin auth
 app.post("/api/admin/auth", async (req) => {
   const body = (req.body || {}) as { key?: string };
