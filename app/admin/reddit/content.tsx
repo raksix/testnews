@@ -35,6 +35,7 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
   const [fetching, setFetching] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [fetchResult, setFetchResult] = useState<string | null>(null);
+  const [logs, setLogs] = useState<string[]>([]);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -56,7 +57,17 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
     } catch {}
   }, [apiKey]);
 
-  useEffect(() => { loadSettings(); loadModels(); }, [loadSettings, loadModels]);
+  const loadLogs = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reddit/logs`, {
+        headers: { "x-admin-key": apiKey },
+      });
+      const data = await res.json();
+      if (data.logs) setLogs(data.logs);
+    } catch {}
+  }, [apiKey]);
+
+  useEffect(() => { loadSettings(); loadModels(); loadLogs(); }, [loadSettings, loadModels, loadLogs]);
 
   const saveSettings = async () => {
     setMsg(null);
@@ -171,6 +182,20 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
             ))}
           </div>
           {settings.subreddits.length === 0 && <p className="text-xs text-mutedc mt-2">No subreddits configured</p>}
+        </div>
+      </div>
+
+      {/* Logs */}
+      <div className="rounded-xl border border-borderc bg-surface2/40 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-textc">Bot Logs</h3>
+          <button onClick={loadLogs} className="text-xs border border-borderc text-mutedc hover:text-textc px-3 py-1.5 rounded-lg transition">Refresh</button>
+        </div>
+        <div className="bg-surface border border-borderc rounded-lg p-4 max-h-64 overflow-y-auto font-mono text-xs text-mutedc space-y-1">
+          {logs.length === 0 && <p>No logs yet</p>}
+          {logs.map((line, i) => (
+            <div key={i} className={line.startsWith("✅") ? "text-emerald-400" : line.startsWith("❌") ? "text-red-400" : ""}>{line}</div>
+          ))}
         </div>
       </div>
     </div>

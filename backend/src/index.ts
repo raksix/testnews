@@ -188,6 +188,23 @@ app.put("/api/admin/settings", async (req, reply) => {
   return { settings: await getSettings() };
 });
 
+// Reddit bot logs
+app.get("/api/admin/reddit/logs", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  try {
+    const { readFileSync, existsSync } = await import("node:fs");
+    const logFile = "/tmp/refetch_content.log";
+    const botLog = existsSync(logFile) ? readFileSync(logFile, "utf8") : "No logs yet";
+    const lines = botLog.split("\n").filter(Boolean);
+    return { logs: lines.slice(-50) };
+  } catch {
+    return { logs: ["Unable to read logs"] };
+  }
+});
+
 // Reddit bot: manual trigger
 app.post("/api/admin/reddit/fetch", async (req, reply) => {
   const headers = req.headers as Record<string, string | undefined>;

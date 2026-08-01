@@ -25,7 +25,7 @@ export default function ArticlesPage() {
   useEffect(() => { setApiKey(localStorage.getItem("admin_key")); }, []);
 
   const load = useCallback(async () => {
-    const res = await fetch(`${API_URL}/api/news?limit=100`);
+    const res = await fetch(`${API_URL}/api/news?limit=200`);
     const data = await res.json();
     setNews(data.news || []);
   }, []);
