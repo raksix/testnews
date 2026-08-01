@@ -11,6 +11,8 @@ interface RedditSettings {
   postsPerSubreddit: number;
   minUps: number;
   maxAgeHours: number;
+  language: string;
+  prompt: string;
 }
 
 const DEFAULT_SETTINGS: RedditSettings = {
@@ -21,6 +23,8 @@ const DEFAULT_SETTINGS: RedditSettings = {
   postsPerSubreddit: 3,
   minUps: 100,
   maxAgeHours: 24,
+  language: "English",
+  prompt: "",
 };
 
 const inputCls =
@@ -164,6 +168,27 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
             <div><label className={labelCls}>Min Ups</label><input type="number" className={inputCls} value={settings.minUps} onChange={(e) => setSettings({ ...settings, minUps: +e.target.value })} min={0} /></div>
             <div><label className={labelCls}>Max Age (hours)</label><input type="number" className={inputCls} value={settings.maxAgeHours} onChange={(e) => setSettings({ ...settings, maxAgeHours: +e.target.value })} min={1} /></div>
           </div>
+
+          <div><label className={labelCls}>AI Language</label>
+            <input className={inputCls} value={settings.language} onChange={(e) => setSettings({ ...settings, language: e.target.value })} placeholder="English, Turkish, German..." />
+          </div>
+        </div>
+
+        {/* Main Prompt */}
+        <div className="rounded-xl border border-borderc bg-surface2/40 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-textc">Main Prompt</h3>
+            <button onClick={() => setSettings({ ...settings, prompt: "" })} className="text-[10px] text-mutedc hover:text-red-500 transition">Reset to default</button>
+          </div>
+          <p className="text-[11px] text-mutedc mb-3">
+            Placeholders: <code className="text-red-400 bg-surface px-1 rounded">{"{title}"}</code> post başlığı, <code className="text-red-400 bg-surface px-1 rounded">{"{excerpt}"}</code> post içeriği, <code className="text-red-400 bg-surface px-1 rounded">{"{language}"}</code> dil ayarı. Boş bırakırsan varsayılan prompt kullanılır.
+          </p>
+          <textarea
+            className={`${inputCls} font-mono text-xs h-64 leading-relaxed`}
+            value={settings.prompt}
+            onChange={(e) => setSettings({ ...settings, prompt: e.target.value })}
+            placeholder="Custom AI prompt... (leave empty for default)"
+          />
         </div>
 
         {/* Subreddits */}

@@ -185,6 +185,24 @@ export const DEFAULT_SETTINGS = {
     postsPerSubreddit: 3,
     minUps: 100,
     maxAgeHours: 24,
+    language: "English",
+    prompt: `You are a news editor for an English news website. Write a professional, detailed news article from this source.
+
+POST TITLE: {title}
+EXCERPT: {excerpt}
+
+RULES:
+- Write in {language}
+- Create an engaging news headline (max 15 words)
+- Write a 3-4 sentence summary (excerpt)
+- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings). Go deep: background, context, expert quotes, implications, what's next
+- Be factual and neutral — do NOT mention Reddit
+- Treat it as original reporting with depth
+- Category: World, Technology, Business, Sports, Science, Health, or Entertainment
+- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story
+
+Respond with ONLY valid JSON:
+{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`,
   },
 } as const;
 

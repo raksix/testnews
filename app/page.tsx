@@ -94,7 +94,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
         </Link>
 
         {/* Side stories */}
-        {rest.slice(0, 2).map((item) => (
+        {rest.slice(0, 4).map((item) => (
           <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3 rounded-xl border border-borderc bg-surface2/40 hover:border-zinc-600 transition p-3">
             {item.image && (
               <div className="w-24 h-20 rounded-lg overflow-hidden shrink-0">

@@ -144,10 +144,16 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   const model = settings.reddit.model;
 
   const selftextInfo = selftext ? `\nBODY: ${selftext.slice(0, 4000)}` : "";
-  const sourceInfo = title ? `\nPOST TITLE: ${title}` : "";
-  const subredditHint = subreddit ? `\nPosts are from r/${subreddit}. Rewrite as original reporting.` : "";
 
-  const prompt = `You are a news editor for an English news website. Write a professional, detailed news article from this source.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 15 words)\n- Write a 3-4 sentence summary (excerpt)\n- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings). Go deep: background, context, expert quotes, implications, what's next\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames\n- Treat it as original reporting with depth\n- Category: World, Technology, Business, Sports, Science, Health, or Entertainment\n- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story\n\nRespond with ONLY valid JSON:\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+  // Use custom prompt from settings (with template placeholders)
+  const template =
+    settings.reddit.prompt ||
+    `You are a news editor for an English news website. Write a professional, detailed news article from this source.\n\nPOST TITLE: {title}\n\nRULES:\n- Write in {language}\n- Create an engaging news headline (max 15 words)\n- Write a 3-4 sentence summary (excerpt)\n- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings)\n- Be factual and neutral — do NOT mention Reddit\n- Category: World, Technology, Business, Sports, Science, Health, or Entertainment\n- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story\n\nRespond with ONLY valid JSON:\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+
+  const prompt = template
+    .replaceAll("{title}", title)
+    .replaceAll("{excerpt}", selftextInfo || title)
+    .replaceAll("{language}", settings.reddit.language || "English");
 
   const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
     method: "POST",
