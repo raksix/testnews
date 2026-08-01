@@ -25,10 +25,13 @@ export default function ArticlesPage() {
   useEffect(() => { setApiKey(localStorage.getItem("admin_key")); }, []);
 
   const load = useCallback(async () => {
-    const res = await fetch(`${API_URL}/api/news?limit=200`);
+    if (!apiKey) return;
+    const res = await fetch(`${API_URL}/api/admin/news`, {
+      headers: { "x-admin-key": apiKey },
+    });
     const data = await res.json();
     setNews(data.news || []);
-  }, []);
+  }, [apiKey]);
 
   useEffect(() => { if (apiKey) load(); }, [apiKey, load]);
 
@@ -46,7 +49,7 @@ export default function ArticlesPage() {
     else { const d = await res.json().catch(() => ({})); setMsg({ type: "err", text: d.error || "Failed" }); }
   };
 
-  const edit = (item: NewsItem) => { setEditingId(item.id || null); setForm({ ...item, publishedAt: item.publishedAt?.slice(0, 16) || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const edit = (item: NewsItem) => { setEditingId((item as any)._id || item.id || null); setForm({ ...item, publishedAt: item.publishedAt?.slice(0, 16) || "" }); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const remove = async (id?: string) => { if (!id || !confirm("Delete?")) return; await fetch(`${API_URL}/api/admin/news/${id}`, { method: "DELETE", headers: { "x-admin-key": apiKey! } }); load(); };
 
   if (!apiKey) return null;
@@ -89,11 +92,9 @@ export default function ArticlesPage() {
         <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
           {filtered.map(item => (
             <div key={item.id || item.slug} className="flex items-center gap-4 p-3 rounded-lg border border-borderc hover:border-zinc-600 transition">
-              {item.image ? (
-                <img src={item.image} alt="" className="w-16 h-12 rounded object-cover shrink-0" />
-              ) : (
-                <div className="w-16 h-12 rounded bg-surface flex items-center justify-center text-zinc-700 text-xs shrink-0">No img</div>
-              )}
+              <div className="w-16 h-12 rounded bg-surface flex items-center justify-center text-zinc-700 text-xs shrink-0">
+                <span className="font-black text-sm">{(item.category || "?").charAt(0)}</span>
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>

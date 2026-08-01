@@ -63,6 +63,22 @@ app.get("/api/news", async (req) => {
   return { news, categories };
 });
 
+// Admin: news list without images (fast, light payload)
+app.get("/api/admin/news", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  const db = await getDb();
+  const items = await db
+    .collection("news")
+    .find({}, { projection: { image: 0, content: 0 } })
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .toArray();
+  return { news: items };
+});
+
 // Single article
 app.get<{ Params: { slug: string } }>("/api/news/:slug", async (req, reply) => {
   const news = await getNewsBySlug(req.params.slug);
