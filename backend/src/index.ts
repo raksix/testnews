@@ -13,6 +13,7 @@ import {
   createComment,
   getSettings,
   updateSettings,
+  getDb,
   slugify,
 } from "./db.js";
 import { runRedditFetch } from "./redditBot.js";
@@ -30,6 +31,24 @@ await app.register(cors, {
 
 // Health
 app.get("/health", async () => ({ ok: true }));
+
+// Stats for admin dashboard
+app.get("/api/admin/stats", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  const db = await getDb();
+  const col = db.collection("news");
+  const [total, reddit, byCategory, todayCount, commentCount] = await Promise.all([
+    col.countDocuments(),
+    col.countDocuments({ source: "reddit" }),
+    col.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }]).toArray(),
+    col.countDocuments({ createdAt: { $gte: new Date(new Date().setHours(0,0,0,0)).toISOString() } }),
+    db.collection("comments").countDocuments(),
+  ]);
+  return { total, reddit, today: todayCount, comments: commentCount, byCategory: byCategory.map((c: any) => ({ category: c._id, count: c.count })) };
+});
 
 // List news: /api/news?category=&limit=&offset=&featured=1
 app.get("/api/news", async (req) => {
