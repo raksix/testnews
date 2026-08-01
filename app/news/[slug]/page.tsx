@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchNewsBySlug, fetchNews, type NewsItem } from "@/lib/api";
 import Comments from "@/app/components/Comments";
-import AutoNext from "@/app/components/AutoNext";
+import InfiniteFeed from "@/app/components/InfiniteFeed";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +52,6 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   if (!news) notFound();
 
   const relatedItems = related.filter((r) => r.slug !== slug).slice(0, 6);
-  const nextItem = related.find((r) => r.slug !== slug);
   const rightSidebar = related.filter((r) => r.slug !== slug).slice(1, 5);
 
   return (
@@ -104,14 +103,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
 
             <Comments slug={slug} />
 
-            {nextItem && (
-              <AutoNext
-                nextSlug={nextItem.slug}
-                nextTitle={nextItem.title}
-                nextExcerpt={nextItem.excerpt}
-                nextCategory={nextItem.category}
-              />
-            )}
+            {/* Infinite feed: next articles load automatically on scroll */}
+            <InfiniteFeed initialSlug={slug} />
           </article>
 
           {/* Sidebar — trending / more news */}
