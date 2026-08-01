@@ -157,3 +157,36 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 }
+
+export interface Comment {
+  _id?: ObjectId;
+  id?: string;
+  newsSlug: string;
+  name: string;
+  content: string;
+  createdAt: string;
+}
+
+export async function listComments(newsSlug: string): Promise<Comment[]> {
+  const db = await getDb();
+  const items = await db
+    .collection<Comment>("comments")
+    .find({ newsSlug })
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .toArray();
+  return items.map((c) => ({ ...c, id: c._id?.toString() }));
+}
+
+export async function createComment(
+  data: Omit<Comment, "_id" | "id" | "createdAt">
+): Promise<Comment> {
+  const db = await getDb();
+  const doc: Comment = {
+    ...data,
+    name: data.name?.trim() ? data.name.trim() : "Anonymous",
+    createdAt: new Date().toISOString(),
+  };
+  const result = await db.collection<Comment>("comments").insertOne(doc as any);
+  return { ...doc, id: result.insertedId.toString() };
+}

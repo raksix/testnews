@@ -1,5 +1,42 @@
 @import "tailwindcss";
 
-html {
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-text: var(--color-zinc-100);
+  --color-muted: var(--color-zinc-400);
+  --color-borderc: var(--color-zinc-800);
+}
+
+:root {
+  --surface: #ffffff;
+  --surface2: #f4f4f5;
+  --text-s: #18181b;
+  --muted-s: #71717a;
+  --border-s: #e4e4e7;
+  color-scheme: light;
+}
+
+.dark {
+  --surface: #000000;
+  --surface2: #18181b;
+  --text-s: #f4f4f5;
+  --muted-s: #a1a1aa;
+  --border-s: #27272a;
   color-scheme: dark;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-textc: var(--text-s);
+  --color-mutedc: var(--muted-s);
+  --color-borderc: var(--border-s);
+}
+
+body {
+  background-color: var(--surface);
+  color: var(--text-s);
 }

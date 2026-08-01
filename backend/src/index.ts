@@ -9,6 +9,8 @@ import {
   createNews,
   updateNews,
   deleteNews,
+  listComments,
+  createComment,
   slugify,
 } from "./db.js";
 
@@ -45,6 +47,31 @@ app.get<{ Params: { slug: string } }>("/api/news/:slug", async (req, reply) => {
   if (!news) return reply.code(404).send({ error: "News not found" });
   return { news };
 });
+
+// Comments
+app.get<{ Params: { slug: string } }>(
+  "/api/news/:slug/comments",
+  async (req) => {
+    const comments = await listComments(req.params.slug);
+    return { comments };
+  }
+);
+
+app.post<{ Params: { slug: string } }>(
+  "/api/news/:slug/comments",
+  async (req, reply) => {
+    const body = (req.body || {}) as { name?: string; content?: string };
+    if (!body.content?.trim()) {
+      return reply.code(400).send({ error: "Content is required" });
+    }
+    const comment = await createComment({
+      newsSlug: req.params.slug,
+      name: body.name || "Anonymous",
+      content: body.content.trim(),
+    });
+    return reply.code(201).send({ comment });
+  }
+);
 
 // Admin auth
 app.post("/api/admin/auth", async (req) => {
