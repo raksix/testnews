@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { fetchNews, type NewsItem } from "@/lib/api";
+import EditorsPicks from "./components/EditorsPicks";
+import MostRead from "./components/MostRead";
+import TrendingTopics from "./components/TrendingTopics";
+import NewsletterSignup from "./components/NewsletterSignup";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +123,20 @@ export default async function HomePage() {
           <Link href="/category/world" className="shrink-0 text-xs font-bold text-red-500 hover:text-red-400 transition">View All →</Link>
         </div>
       )}
+
+      {/* Editor's Picks */}
+      <EditorsPicks />
+
+      {/* Trending + Most Read */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+        <MostRead />
+        <div>
+          <TrendingTopics />
+        </div>
+      </div>
+
+      {/* Newsletter */}
+      <NewsletterSignup />
     </div>
   );
 }

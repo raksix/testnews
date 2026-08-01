@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import ThemeToggle from "./components/ThemeToggle";
+import QuickSearch from "./components/QuickSearch";
+import BreakingTicker from "./components/BreakingTicker";
 
 export const metadata: Metadata = {
   title: {
@@ -35,6 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-surface text-textc antialiased min-h-screen flex flex-col transition-colors">
+        <BreakingTicker />
         <header className="sticky top-0 z-50 border-b border-borderc bg-surface/80 backdrop-blur">
           <div className="mx-auto max-w-6xl px-4">
             <div className="flex items-center justify-between h-16">
@@ -58,6 +61,7 @@ export default function RootLayout({
                 ))}
               </nav>
               <div className="flex items-center gap-2">
+                <QuickSearch />
                 <ThemeToggle />
                 <Link
                   href="/admin"
