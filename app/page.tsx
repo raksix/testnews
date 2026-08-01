@@ -134,6 +134,8 @@ export default async function HomePage() {
 
   // Trending: first 5 of the remaining
   const trending = rest.slice(0, 5);
+  // Latest news: first 8 after hero for horizontal scroll
+  const latestNews = rest.slice(0, 8);
   // Latest headlines grid: next 12 after trending
   const latest = rest.slice(5, 17);
 
@@ -141,6 +143,30 @@ export default async function HomePage() {
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* Hero — full width */}
       {hero && <HeroCard item={hero} />}
+
+      {/* Latest News horizontal scroll */}
+      <section className="mt-10">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1.5 h-6 bg-red-600 rounded-full" />
+          <h2 className="text-xl font-black text-textc tracking-tight">Latest News</h2>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          {latestNews.map((item) => (
+            <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group shrink-0 w-64 rounded-xl overflow-hidden border border-borderc bg-surface2/40 hover:border-zinc-600 transition">
+              {item.image && (
+                <div className="h-36 overflow-hidden">
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                </div>
+              )}
+              <div className="p-3">
+                <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
+                <h3 className="mt-1 text-sm font-bold text-textc group-hover:text-white leading-snug line-clamp-2">{item.title}</h3>
+                <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* Trending + Latest mix */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">

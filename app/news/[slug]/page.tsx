@@ -27,6 +27,12 @@ function renderContent(content: string) {
           {block.split("\n").map((line, j) => <li key={j}>{line.replace(/^- /, "")}</li>)}
         </ul>
       );
+    if (block.startsWith("> "))
+      return (
+        <blockquote key={i} className="border-l-4 border-red-500 pl-4 my-4 text-mutedc italic">
+          {block.slice(2)}
+        </blockquote>
+      );
     return <p key={i} className="text-mutedc leading-relaxed my-4 text-[17px]">{block}</p>;
   });
 }

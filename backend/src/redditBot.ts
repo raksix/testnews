@@ -147,7 +147,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   const sourceInfo = title ? `\nPOST TITLE: ${title}` : "";
   const subredditHint = subreddit ? `\nPosts are from r/${subreddit}. Rewrite as original reporting.` : "";
 
-  const prompt = `You are a news editor for an English news website. Rewrite this Reddit post into a proper news article.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 12 words)\n- Write a 2-3 sentence summary (excerpt)\n- Write a full article of 4-6 short paragraphs (## headings allowed)\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"\n- Treat it as original reporting\n- Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment\n- IMAGE QUERY (CRITICAL): a 3-6 word English search query for a REAL NEWS PHOTO of THIS SPECIFIC STORY's subject. Describe what a photojournalist would photograph for this story. Examples: for a story about a data center energy crisis → "data center server racks energy", for a story about a bookseller being jailed → "prison bars hands cuffs". NEVER generic words like "technology" or "news" alone. The photo must clearly illustrate THIS story.\n\nRespond with ONLY valid JSON (no markdown fences):\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+  const prompt = `You are a news editor for an English news website. Write a professional, detailed news article from this source.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 15 words)\n- Write a 3-4 sentence summary (excerpt)\n- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings). Go deep: background, context, expert quotes, implications, what's next\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames\n- Treat it as original reporting with depth\n- Category: World, Technology, Business, Sports, Science, Health, or Entertainment\n- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story\n\nRespond with ONLY valid JSON:\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
 
   const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
     method: "POST",
@@ -161,7 +161,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
         { role: "system", content: "You are a professional news editor. Always respond with valid JSON only." },
         { role: "user", content: prompt },
       ],
-      max_tokens: 1200,
+      max_tokens: 500000,
       stream: false,
     }),
   });
@@ -241,14 +241,11 @@ export async function runRedditFetch(): Promise<FetchResult> {
             imageUrl = await searchImage(rewritten.title);
           }
 
-          // Add source URL to content
-          const contentWithSource = rewritten.content + (post.url ? `\n\n---\n\n[Read original article](${post.url})` : "");
-
           const article = await createNews({
             slug: `${slugify(rewritten.title)}-${post.id.slice(0, 6)}`,
             title: rewritten.title,
             excerpt: rewritten.excerpt,
-            content: contentWithSource,
+            content: rewritten.content,
             category: rewritten.category,
             image: imageUrl,
             author: `TestNews Desk`,
