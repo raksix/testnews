@@ -95,6 +95,22 @@ app.post<{ Params: { slug: string } }>(
   }
 );
 
+// Delete comment (admin)
+app.delete<{ Params: { id: string } }>(
+  "/api/admin/comments/:id",
+  async (req, reply) => {
+    const headers = req.headers as Record<string, string | undefined>;
+    if (headers["x-admin-key"] !== ADMIN_KEY) {
+      return reply.code(401).send({ error: "Unauthorized" });
+    }
+    const { getDb } = await import("./db.js");
+    const db = await getDb();
+    const result = await db.collection("comments").deleteOne({ _id: new (await import("mongodb")).ObjectId(req.params.id) });
+    if (result.deletedCount === 0) return reply.code(404).send({ error: "Not found" });
+    return { ok: true };
+  }
+);
+
 // Admin auth
 app.post("/api/admin/auth", async (req) => {
   const body = (req.body || {}) as { key?: string };
