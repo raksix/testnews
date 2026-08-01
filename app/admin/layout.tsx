@@ -1,17 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import AdminSidebar from "@/app/components/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const pathname = usePathname();
+  const isLogin = pathname === "/admin/login";
 
   useEffect(() => {
     const key = localStorage.getItem("admin_key");
     setApiKey(key);
     setChecking(false);
   }, []);
+
+  // Login page renders standalone (no sidebar, no auth check)
+  if (isLogin) {
+    return <div className="min-h-screen bg-surface">{children}</div>;
+  }
 
   if (checking) {
     return (
