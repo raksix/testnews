@@ -27,6 +27,30 @@ interface RedditToken {
   expires_at: number;
 }
 
+// Domains that serve icons/logos/placeholders — never use for news photos
+const IMAGE_BLACKLIST = [
+  "cdn.jsdelivr.net",
+  "lucide-static",
+  "devicon",
+  "icon",
+  "logo",
+  "flaticon",
+  "iconfinder",
+  "svgrepo",
+  "w3.org",
+  "placehold",
+  "dummyimage",
+  "shields.io",
+  "badge",
+  "ui-avatars",
+  "avatar",
+  "gravatar",
+  "emojicdn",
+  "twemoji",
+  "favicon",
+  "pixabay.com/vectors",
+];
+
 async function searchImage(query: string): Promise<string> {
   // Try SearXNG JSON API first
   try {
@@ -37,10 +61,14 @@ async function searchImage(query: string): Promise<string> {
     if (res.ok) {
       const data = await res.json();
       const results = data?.results || [];
-      for (const r of results.slice(0, 5)) {
+      for (const r of results.slice(0, 12)) {
         const url = r.img_src || r.thumbnail_src || "";
         if (!url.startsWith("http")) continue;
-        // Download and convert to base64 data URI
+        // Skip blacklisted domains
+        const lower = url.toLowerCase();
+        if (IMAGE_BLACKLIST.some((d) => lower.includes(d))) continue;
+        // Skip vector/small formats
+        if (/\.(svg|ico|gif)$/i.test(url)) continue;
         const downloaded = await downloadImageAsDataUri(url);
         if (downloaded) return downloaded;
       }
@@ -119,7 +147,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   const sourceInfo = title ? `\nPOST TITLE: ${title}` : "";
   const subredditHint = subreddit ? `\nPosts are from r/${subreddit}. Rewrite as original reporting.` : "";
 
-  const prompt = `You are a news editor for an English news website. Rewrite this Reddit post into a proper news article.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 12 words)\n- Write a 2-3 sentence summary (excerpt)\n- Write a full article of 4-6 short paragraphs (## headings allowed)\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"\n- Treat it as original reporting\n- Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment\n- Image query: a short 3-5 word English search query for a relevant stock photo (e.g. "artificial intelligence chip")\n\nRespond with ONLY valid JSON (no markdown fences):\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+  const prompt = `You are a news editor for an English news website. Rewrite this Reddit post into a proper news article.\n\nPOST TITLE: ${title}${selftextInfo}${sourceInfo}${subredditHint}\n\nRULES:\n- Write in ENGLISH\n- Create an engaging news headline (max 12 words)\n- Write a 2-3 sentence summary (excerpt)\n- Write a full article of 4-6 short paragraphs (## headings allowed)\n- Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"\n- Treat it as original reporting\n- Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment\n- IMAGE QUERY (CRITICAL): a 3-6 word English search query for a REAL NEWS PHOTO of THIS SPECIFIC STORY's subject. Describe what a photojournalist would photograph for this story. Examples: for a story about a data center energy crisis → "data center server racks energy", for a story about a bookseller being jailed → "prison bars hands cuffs". NEVER generic words like "technology" or "news" alone. The photo must clearly illustrate THIS story.\n\nRespond with ONLY valid JSON (no markdown fences):\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
 
   const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
     method: "POST",
