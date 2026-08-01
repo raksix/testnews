@@ -14,6 +14,8 @@ const REDDIT_CLIENT_ID = "TWTsqXa53CexlrYGBWaesQ";
 const REDDIT_UA = "gigachad-scout/1.0 (by /u/raksix)";
 const REDDIT_TOKEN_FILE = "/root/gigachad-agent/data/reddit_tokens.json";
 
+const SEARXNG_URL = process.env.SEARXNG_URL || "http://127.0.0.1:8080";
+
 const OMNIROUTE_URL = process.env.OMNIROUTE_URL || "https://omniroute.fermag.com.tr/v1";
 const OMNIROUTE_KEY = process.env.OMNIROUTE_KEY || "";
 
@@ -23,6 +25,35 @@ interface RedditToken {
   access_token: string;
   refresh_token?: string;
   expires_at: number;
+}
+
+async function searchImage(query: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `${SEARXNG_URL}/search?q=${encodeURIComponent(query)}&categories=images&format=json`,
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const results = data?.results || [];
+      for (const r of results.slice(0, 5)) {
+        if (r.img_src && r.img_src.startsWith("http")) return r.img_src;
+        if (r.thumbnail_src && r.thumbnail_src.startsWith("http")) return r.thumbnail_src;
+      }
+    }
+  } catch {}
+  // Fallback: try HTML parse
+  try {
+    const res = await fetch(
+      `${SEARXNG_URL}/search?q=${encodeURIComponent(query)}&categories=images`,
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const html = await res.text();
+    const match = html.match(/data-src="(https?:\/\/[^"']+\.(jpg|jpeg|png|webp))/i)
+      || html.match(/src="(https?:\/\/[^"']+\.(jpg|jpeg|png|webp))/i);
+    if (match) return match[1];
+  } catch {}
+  return "";
 }
 
 function loadRedditToken(): RedditToken | null {
@@ -52,6 +83,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   excerpt: string;
   content: string;
   category: string;
+  imageQuery: string;
 }> {
   const settings = await getSettings();
   const model = settings.reddit.model;
@@ -70,9 +102,10 @@ RULES:
 - Be factual and neutral — do NOT mention Reddit, the subreddit, usernames, or "Reddit user"
 - Treat it as original reporting
 - Category must be exactly one of: World, Technology, Business, Sports, Science, Health, Entertainment
+- Image query: a short 3-5 word English search query for a relevant stock photo (e.g. "artificial intelligence chip")
 
 Respond with ONLY valid JSON (no markdown fences):
-{"title":"...","excerpt":"...","content":"...","category":"..."}`;
+{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
 
   const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
     method: "POST",
@@ -103,10 +136,11 @@ Respond with ONLY valid JSON (no markdown fences):
       excerpt: parsed.excerpt || "",
       content: parsed.content || "",
       category: parsed.category || "Technology",
+      imageQuery: parsed.imageQuery || "",
     };
   } catch {
     // Fallback: use raw output as content
-    return { title, excerpt: "", content: text, category: "Technology" };
+    return { title, excerpt: "", content: text, category: "Technology", imageQuery: "" };
   }
 }
 
@@ -151,13 +185,19 @@ export async function runRedditFetch(): Promise<FetchResult> {
         try {
           const rewritten = await aiRewrite(post.title, post.selftext || "", sub);
 
+          // Search image if AI provided a query and post has no image
+          let imageUrl = post.url && post.url.startsWith("http") && !post.is_self ? post.url : "";
+          if (!imageUrl && rewritten.imageQuery) {
+            imageUrl = await searchImage(rewritten.imageQuery);
+          }
+
           const article = await createNews({
             slug: `${slugify(rewritten.title)}-${post.id.slice(0, 6)}`,
             title: rewritten.title,
             excerpt: rewritten.excerpt,
             content: rewritten.content,
             category: rewritten.category,
-            image: post.url && (post.url.startsWith("http") && !post.is_self) ? post.url : "",
+            image: imageUrl,
             author: `TestNews Desk`,
             featured: false,
             publishedAt: new Date().toISOString(),
