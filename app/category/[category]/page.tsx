@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { listNews, CATEGORIES, type NewsItem } from "@/lib/db";
+import { fetchNews, type NewsItem } from "@/lib/api";
+import { CATEGORIES } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function CategoryPage({
   const { category } = await params;
   if (!VALID.includes(category)) notFound();
   const name = CATEGORIES.find((c) => c.toLowerCase() === category)!;
-  const news = await listNews(name, 30);
+  const { news } = await fetchNews({ category: name, limit: 30 });
 
   const [headline, ...rest] = news;
 

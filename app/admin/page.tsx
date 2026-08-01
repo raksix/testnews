@@ -2,19 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/categories";
-
-interface NewsItem {
-  id?: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  image: string;
-  author: string;
-  featured: boolean;
-  publishedAt: string;
-}
+import { API_URL, type NewsItem } from "@/lib/api";
 
 const EMPTY: NewsItem = {
   slug: "",
@@ -42,7 +30,7 @@ export default function AdminPage() {
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/news?limit=50");
+    const res = await fetch(`${API_URL}/api/news?limit=50`);
     const data = await res.json();
     setNews(data.news || []);
   }, []);
@@ -53,7 +41,7 @@ export default function AdminPage() {
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/admin/auth", {
+    const res = await fetch(`${API_URL}/api/admin/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key }),
@@ -75,7 +63,7 @@ export default function AdminPage() {
       publishedAt: form.publishedAt ? new Date(form.publishedAt).toISOString() : new Date().toISOString(),
       featured: Boolean(form.featured),
     };
-    const url = editingId ? `/api/admin/news/${editingId}` : "/api/admin/news";
+    const url = editingId ? `${API_URL}/api/admin/news/${editingId}` : `${API_URL}/api/admin/news`;
     const res = await fetch(url, {
       method: editingId ? "PUT" : "POST",
       headers: {
@@ -107,7 +95,7 @@ export default function AdminPage() {
 
   const remove = async (id?: string) => {
     if (!id || !confirm("Delete this article?")) return;
-    const res = await fetch(`/api/admin/news/${id}`, {
+    const res = await fetch(`${API_URL}/api/admin/news/${id}`, {
       method: "DELETE",
       headers: { "x-admin-key": key },
     });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getNewsBySlug, listNews, type NewsItem } from "@/lib/db";
+import { fetchNewsBySlug, fetchNews, type NewsItem } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -52,10 +52,11 @@ export default async function NewsDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [news, related] = await Promise.all([
-    getNewsBySlug(slug),
-    listNews(undefined, 6),
+  const [news, relatedData] = await Promise.all([
+    fetchNewsBySlug(slug),
+    fetchNews({ limit: 6 }),
   ]);
+  const related = relatedData.news;
   if (!news) notFound();
 
   const relatedItems = related.filter((r) => r.slug !== slug).slice(0, 4);

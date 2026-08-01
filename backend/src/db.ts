@@ -1,5 +1,4 @@
 import { MongoClient, ObjectId, type Db } from "mongodb";
-import { CATEGORIES, DEFAULT_CATEGORY } from "./categories";
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
@@ -16,9 +15,7 @@ export async function getDb(): Promise<Db> {
   if (cachedDb) return cachedDb;
   await client.connect();
   cachedDb = client.db(MONGODB_DB);
-  await cachedDb
-    .collection("news")
-    .createIndex({ slug: 1 }, { unique: true });
+  await cachedDb.collection("news").createIndex({ slug: 1 }, { unique: true });
   await cachedDb.collection("news").createIndex({ category: 1 });
   await cachedDb.collection("news").createIndex({ publishedAt: -1 });
   return cachedDb;
@@ -40,7 +37,15 @@ export interface NewsItem {
   updatedAt?: string;
 }
 
-export { CATEGORIES } from "./categories";
+export const CATEGORIES = [
+  "World",
+  "Technology",
+  "Business",
+  "Sports",
+  "Science",
+  "Health",
+  "Entertainment",
+] as const;
 
 function serialize(item: NewsItem): NewsItem {
   return { ...item, id: item._id?.toString() };
@@ -123,8 +128,13 @@ export async function updateNews(
 ): Promise<NewsItem | null> {
   const db = await getDb();
   if (!ObjectId.isValid(id)) return null;
-  const update: Record<string, unknown> = { ...data, updatedAt: new Date().toISOString() };
-  if (typeof update.featured === "string") update.featured = update.featured === "1" || update.featured === "true";
+  const update: Record<string, unknown> = {
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
+  if (typeof update.featured === "string")
+    update.featured =
+      update.featured === "1" || update.featured === "true";
   await db
     .collection<NewsItem>("news")
     .updateOne({ _id: new ObjectId(id) }, { $set: update });

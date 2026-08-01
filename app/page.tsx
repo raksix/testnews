@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listNews, getFeatured, type NewsItem } from "@/lib/db";
+import { fetchNews, type NewsItem } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +59,12 @@ function NewsCard({ item, large = false }: { item: NewsItem; large?: boolean }) 
 }
 
 export default async function HomePage() {
-  const [news, featured] = await Promise.all([listNews(undefined, 15), getFeatured()]);
+  const [data, featuredData] = await Promise.all([
+    fetchNews({ limit: 15 }),
+    fetchNews({ featured: true }),
+  ]);
+  const news = data.news;
+  const featured = featuredData.news;
   const hero = featured[0] || news[0];
   const rest = (hero ? news.filter((n) => n.slug !== hero.slug) : news).slice(0, 14);
 
