@@ -134,10 +134,10 @@ export default async function HomePage() {
 
   // Trending: first 5 of the remaining
   const trending = rest.slice(0, 5);
-  // Latest news: first 8 after hero for horizontal scroll
-  const latestNews = rest.slice(0, 8);
-  // Latest headlines grid: next 12 after trending
-  const latest = rest.slice(5, 17);
+  // Latest news: first 6 after hero for horizontal scroll
+  const latestNews = rest.slice(0, 6);
+  // Latest grid: next 8 after the horizontal strip (no duplication)
+  const latest = rest.slice(6, 14);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -191,7 +191,7 @@ export default async function HomePage() {
 
         {/* Latest grid */}
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {latest.slice(0, 4).map((item) => (
+          {latest.slice(0, 8).map((item) => (
             <SmallCard key={item.id || item.slug} item={item} />
           ))}
         </div>
@@ -204,19 +204,6 @@ export default async function HomePage() {
       {CATEGORY_SECTIONS.map((cat) => (
         <CategorySection key={cat} category={cat} items={byCategory.get(cat) || []} />
       ))}
-
-      {/* Latest headlines full grid */}
-      <section className="mt-16">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-1.5 h-6 bg-red-600 rounded-full" />
-          <h2 className="text-xl font-black text-textc tracking-tight">Latest Headlines</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {latest.slice(4).map((item) => (
-            <SmallCard key={item.id || item.slug} item={item} />
-          ))}
-        </div>
-      </section>
 
       {/* Live bar */}
       {rest.length > 0 && (
