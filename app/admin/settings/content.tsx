@@ -94,7 +94,7 @@ export default function SettingsPage({ apiKey }: { apiKey: string }) {
         {/* Fetch Settings */}
         <div className="rounded-xl border border-borderc bg-surface2/40 p-6 space-y-5">
           <h2 className="font-bold text-textc text-lg">Fetch Settings</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Interval (minutes)</label>
               <input type="number" className={inputCls} value={settings.reddit.intervalMinutes} onChange={e => setSettings({ ...settings, reddit: { ...settings.reddit, intervalMinutes: +e.target.value } })} min={10} />
@@ -104,7 +104,7 @@ export default function SettingsPage({ apiKey }: { apiKey: string }) {
               <input type="number" className={inputCls} value={settings.reddit.postsPerSubreddit} onChange={e => setSettings({ ...settings, reddit: { ...settings.reddit, postsPerSubreddit: +e.target.value } })} min={1} max={25} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Minimum Upvotes</label>
               <input type="number" className={inputCls} value={settings.reddit.minUps} onChange={e => setSettings({ ...settings, reddit: { ...settings.reddit, minUps: +e.target.value } })} min={0} />

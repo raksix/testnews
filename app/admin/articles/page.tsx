@@ -71,7 +71,7 @@ export default function ArticlesPage() {
       <form onSubmit={save} className="rounded-xl border border-borderc bg-surface2/40 p-6 space-y-4">
         <h2 className="font-bold text-textc">{editingId ? "✏️ Edit Article" : "➕ New Article"}</h2>
         <div><label className={labelCls}>Title *</label><input className={inputCls} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div><label className={labelCls}>Category</label><select className={inputCls} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
           <div><label className={labelCls}>Author</label><input className={inputCls} value={form.author} onChange={e => setForm({ ...form, author: e.target.value })} /></div>
         </div>

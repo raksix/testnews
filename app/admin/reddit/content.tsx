@@ -160,11 +160,11 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
               {models.map((m) => <option key={m} value={m}>{m}</option>)}
             </select></div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={labelCls}>Interval (min)</label><input type="number" className={inputCls} value={settings.intervalMinutes} onChange={(e) => setSettings({ ...settings, intervalMinutes: +e.target.value })} min={10} /></div>
             <div><label className={labelCls}>Posts/Sub</label><input type="number" className={inputCls} value={settings.postsPerSubreddit} onChange={(e) => setSettings({ ...settings, postsPerSubreddit: +e.target.value })} min={1} max={25} /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={labelCls}>Min Ups</label><input type="number" className={inputCls} value={settings.minUps} onChange={(e) => setSettings({ ...settings, minUps: +e.target.value })} min={0} /></div>
             <div><label className={labelCls}>Max Age (hours)</label><input type="number" className={inputCls} value={settings.maxAgeHours} onChange={(e) => setSettings({ ...settings, maxAgeHours: +e.target.value })} min={1} /></div>
           </div>
