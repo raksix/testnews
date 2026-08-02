@@ -55,7 +55,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile top bar */}
       <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 border-b border-borderc bg-surface/90 backdrop-blur">
-        <button onClick={() => setMobileOpen(true)} className="flex items-center gap-2 text-textc font-bold">
+        <button onClick={() => setMobileOpen(true)} className="flex items-center gap-2.5 text-textc font-bold px-2 -ml-2 py-1.5 rounded-lg hover:bg-surface2 transition">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
           <span className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center font-black text-white text-xs">T</span>
           <span className="text-sm">Admin Panel</span>
         </button>
