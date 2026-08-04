@@ -11,10 +11,21 @@ function formatDate(iso: string) {
 
 const VALID = CATEGORIES.map((c) => c.toLowerCase());
 
+const CATEGORY_LABELS: Record<string, string> = {
+  World: "Dünya",
+  Technology: "Teknoloji",
+  Business: "Ekonomi",
+  Sports: "Spor",
+  Science: "Bilim",
+  Health: "Sağlık",
+  Entertainment: "Magazin",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params;
   const name = CATEGORIES.find((c) => c.toLowerCase() === category) || category;
-  return { title: `${name} News`, description: `Latest ${name} news and headlines from around the globe.` };
+  const label = CATEGORY_LABELS[name] || name;
+  return { title: `${label} Haberleri`, description: `${label} kategorisindeki en güncel haberler.` };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
@@ -28,7 +39,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-8">
         <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Category</p>
-        <h1 className="text-4xl font-black text-textc">{name} News</h1>
+        <h1 className="text-4xl font-black text-textc">{CATEGORY_LABELS[name] || name} Haberleri</h1>
         <p className="text-mutedc mt-2">{news.length} article{news.length !== 1 ? "s" : ""} · Latest updates</p>
       </div>
 
