@@ -15,84 +15,6 @@ const NAV = [
   { label: "Science", href: "/category/science" },
 ];
 
-const MARKET = [
-  { name: "Dolar", value: "34,28", change: "+0,42%", up: true },
-  { name: "Euro", value: "37,15", change: "+0,31%", up: true },
-  { name: "Gram Altın", value: "2.980", change: "-0,18%", up: false },
-  { name: "Çeyrek", value: "4.870", change: "+0,25%", up: true },
-  { name: "BIST 100", value: "10.842", change: "+1,12%", up: true },
-  { name: "Bitcoin", value: "$68.240", change: "-0,84%", up: false },
-];
-
-const PRAYER = [
-  { name: "Fajr", time: "04:12" },
-  { name: "Sunrise", time: "05:52" },
-  { name: "Dhuhr", time: "13:16" },
-  { name: "Asr", time: "17:08" },
-  { name: "Maghrib", time: "20:28" },
-  { name: "Isha", time: "21:58" },
-];
-
-function Arrow({ up }: { up: boolean }) {
-  return (
-    <svg viewBox="0 0 14 14" className="w-[13px] h-[13px] shrink-0">
-      <path
-        d={up
-          ? "M9.2 3.51q-.14.04-.26.15-.12.11-.16.25-.06.2.03.4.08.19.25.29.1.04.3.05.22.02 1.01.02h1.05L7.08 8.2 5.78 6.91q-1.29-1.29-1.38-1.33-.09-.04-.22-.05-.12-.01-.22.03-.09.03-.37.3-.29.27-1.73 1.72-1.97 1.97-2.02 2.04-.08.2-.04.38.03.18.16.3.15.15.36.17.21.02.38-.09.07-.05 1.76-1.75l1.7-1.7 2.35 2.34q.25.23.35.29.07.04.18.04h.08q.1 0 .2-.05.13-.09.47-.44l3.66-3.64v2.24q.04.1.11.16.07.08.14.11.07.04.17.05.24.04.43-.09.2-.13.26-.37.01-.11 0-1.92V3.7q-.1-.2-.3-.3l-.08-.04-1.86-.01q-1.86 0-1.94.02z"
-          : "M1.02 3.51q-.11.03-.22.12-.1.08-.16.19-.05.12-.05.26 0 .15.05.28.05.07 2.02 2.04 1.43 1.43 1.72 1.71.3.28.37.31.2.08.43 0 .07-.03.27-.22.2-.19 1.13-1.11l1.3-1.3 3.54 3.54h-1.04q-1.03 0-1.15.02-.25.03-.38.24-.13.2-.1.43.03.23.25.37l.01.01q.08.06.17.07.11.02.47.03l3.34-.02.08-.04q.2-.1.3-.3l.04-.1V7.5q.01-1.8 0-1.92-.04-.19-.19-.33-.16-.14-.37-.14-.2 0-.36.1-.14.1-.2.29-.03.05-.04.22v2.06l-2.03-2.02q-1.22-1.23-1.64-1.63-.42-.4-.47-.44-.09-.04-.24-.04h-.03q-.11 0-.2.04-.09.07-.36.3-.18.19-.84.85l-1.48 1.48-1.72-1.74q-1.15-1.14-1.46-1.44-.3-.29-.38-.32-.07-.03-.18-.04-.1-.01-.19 0z"}
-        fill={up ? "#16A34A" : "#E23A3A"}
-      />
-    </svg>
-  );
-}
-
-function MarketBar() {
-  const today = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric", weekday: "long" });
-  return (
-    <div className="bg-band text-white">
-      <div className="mx-auto max-w-[1320px] px-4 py-[9px] flex items-center justify-between gap-4 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-[18px] shrink-0">
-          <span className="flex items-center gap-1.5 bg-brand text-white text-[11px] font-bold tracking-[0.5px] px-2 py-0.5 rounded">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />LIVE
-          </span>
-          {MARKET.map((m) => (
-            <span key={m.name} className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className="text-[12px] text-[#8A93A3]">{m.name}</span>
-              <span className="text-[12px] font-semibold">{m.value}</span>
-              <Arrow up={m.up} />
-              <span className={`text-[11px] font-semibold ${m.up ? "text-[#16A34A]" : "text-[#E23A3A]"}`}>{m.change}</span>
-            </span>
-          ))}
-        </div>
-        <span className="text-[12px] text-[#8A93A3] whitespace-nowrap hidden lg:block">{today} • Istanbul 29°</span>
-      </div>
-    </div>
-  );
-}
-
-function PrayerBar() {
-  return (
-    <div className="bg-surface2 border-b border-borderc hidden md:block">
-      <div className="mx-auto max-w-[1320px] px-4 py-[7px] flex items-center justify-between">
-        <span className="flex items-center gap-2 text-[12px] font-bold text-textc">
-          <svg viewBox="0 0 14 14" className="w-[15px] h-[15px]">
-            <path d="M6.57 1.19q-1.12.08-2.13.57-1.38.68-2.24 1.92-.85 1.25-1 2.79-.03.22-.02.68.02.45.04.68.17 1.08.68 1.99.5.9 1.3 1.6.56.48 1.23.82.67.33 1.39.47.35.07.55.09.2.02.65.02.37 0 .5-.01.15-.01.31-.03 1.96-.31 3.3-1.67.95-.95 1.38-2.17.26-.8.32-1.57.02-.43-.24-.69-.27-.26-.64-.26-.14 0-.25.04-.12.03-.28.13-.21.11-.27.14-.56.24-1.09.27-.85.02-1.6-.41-.75-.43-1.13-1.2-.17-.32-.24-.63-.07-.3-.07-.69 0-.42.09-.76.09-.34.32-.73.08-.16.11-.26.04-.11.04-.25 0-.14-.03-.25-.05-.24-.24-.41-.19-.18-.43-.22-.13-.02-.31 0zm4.91.01q-.24.09-.35.34-.03.05-.03.13-.01.06-.02.3v.35h-.28q-.32 0-.46.05-.14.04-.26.15-.2.2-.15.5.05.3.32.42.08.03.14.04.06 0 .32.02h.37v.3q0 .31.03.45.03.13.15.25.12.12.32.15.2.04.35-.05.08-.04.15-.12.07-.08.1-.15.04-.08.05-.14 0-.06.02-.33v-.36h.36q.26-.02.33-.02.06-.01.14-.04.08-.04.15-.11.08-.07.11-.14.04-.07.05-.18.04-.2-.05-.37-.09-.16-.28-.26-.08-.03-.14-.04-.06-.01-.33-.02h-.35v-.36q-.01-.26-.02-.32 0-.07-.04-.14-.03-.08-.13-.16-.09-.09-.18-.12-.09-.04-.2-.04-.13 0-.2.03zM6.16 4.46q-.03.05-.1.22-.42 1.19-.11 2.38.27 1.09 1.08 1.89.95.96 2.35 1.18.2.03.52.03.32 0 .53-.03.25-.04.56-.13.31-.08.5-.16l.07-.03v.04q.01.04-.06.31-.08.26-.12.42-.13.32-.33.68-.2.37-.41.63-.59.75-1.42 1.19-.82.45-1.75.56-.92.1-1.83-.18-1.04-.3-1.83-1.03-.79-.73-1.18-1.74-.31-.81-.31-1.71 0-.9.32-1.69.35-.9 1.03-1.58.68-.68 1.57-1.04.2-.09.49-.17.3-.08.4-.08.04 0 .04 0 0 0-.01.04z" fill="#D6122A" />
-          </svg>
-          Istanbul Prayer Times
-        </span>
-        <div className="flex items-center gap-[26px]">
-          {PRAYER.map((p) => (
-            <span key={p.name} className="flex flex-col items-center gap-[1px]">
-              <span className="text-[10px] font-semibold tracking-[0.3px] text-mutedc">{p.name}</span>
-              <span className="text-[13px] font-bold text-textc">{p.time}</span>
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function SiteHeader() {
   const pathname = usePathname();
   const [breaking, setBreaking] = useState<NewsItem[]>([]);
@@ -117,9 +39,6 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Market bar */}
-      <MarketBar />
-
       {/* Main header */}
       <div className="bg-surface border-b border-borderc">
         <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center justify-between gap-4">
@@ -160,9 +79,6 @@ export default function SiteHeader() {
           </div>
         </nav>
       </div>
-
-      {/* Prayer bar */}
-      <PrayerBar />
 
       {/* Breaking news bar */}
       <div className="bg-[#FFF4F4] border-b border-borderc">
