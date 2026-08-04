@@ -5,13 +5,14 @@ import Link from "next/link";
 import { API_URL, type NewsItem } from "@/lib/api";
 
 const NAV = [
-  { label: "Gündem", href: "/category/world" },
+  { label: "Gündem", href: "/" },
   { label: "Ekonomi", href: "/category/business" },
   { label: "Spor", href: "/category/sports" },
+  { label: "Dünya", href: "/category/world" },
   { label: "Teknoloji", href: "/category/technology" },
   { label: "Sağlık", href: "/category/health" },
-  { label: "Bilim", href: "/category/science" },
   { label: "Magazin", href: "/category/entertainment" },
+  { label: "Yaşam", href: "/category/science" },
 ];
 
 const MARKET = [
@@ -112,7 +113,7 @@ export default function SiteHeader() {
 
   if (pathname.startsWith("/admin")) return null;
 
-  const active = pathname === "/" ? "/category/world" : pathname;
+  const active = pathname === "/" ? "/" : pathname;
 
   return (
     <header className="sticky top-0 z-50">

@@ -8,7 +8,7 @@ import NewsletterSignup from "./components/NewsletterSignup";
 export const dynamic = "force-dynamic";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
 }
 
 const CATEGORY_SECTIONS = ["World", "Technology", "Business", "Sports", "Science", "Health", "Entertainment"];
@@ -48,48 +48,27 @@ function HeroCard({ item }: { item: NewsItem }) {
   );
 }
 
-function SmallCard({ item }: { item: NewsItem }) {
-  return (
-    <Link href={`/news/${item.slug}`} className="group block rounded-xl overflow-hidden border border-borderc bg-surface2/40 hover:border-zinc-600 transition">
-      {item.image ? (
-        <div className="h-44 overflow-hidden">
-          <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-        </div>
-      ) : (
-        <div className="h-44 bg-gradient-to-br from-borderc to-surface2 flex items-center justify-center">
-          <span className="text-4xl font-black text-zinc-700">T</span>
-        </div>
-      )}
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-brand">{item.category}</span>
-          <span className="text-[10px] text-mutedc">{formatDate(item.publishedAt)}</span>
-        </div>
-        <h3 className="font-bold text-textc group-hover:text-white leading-snug">{item.title}</h3>
-      </div>
-    </Link>
-  );
-}
-
 function CategorySection({ category, items }: { category: string; items: NewsItem[] }) {
   if (items.length === 0) return null;
   const [lead, ...rest] = items;
 
   return (
-    <section className="mt-14">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-6 bg-brand rounded-full" />
-          <h2 className="text-xl font-black text-textc tracking-tight">{CATEGORY_LABELS[category] || category}</h2>
+    <section>
+      {/* Bölüm başlığı — kırmızı bar + başlık + Tümü */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2.5">
+          <div className="w-1 h-6 bg-brand rounded-full" />
+          <h2 className="text-[22px] font-extrabold text-textc tracking-tight">{CATEGORY_LABELS[category] || category}</h2>
         </div>
         <Link href={`/category/${category.toLowerCase()}`} className="text-xs font-bold text-mutedc hover:text-brand transition uppercase tracking-wide">
           Tümü →
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Lead story — bigger */}
-        <Link href={`/news/${lead.slug}`} className="group relative block rounded-xl overflow-hidden min-h-[260px] md:row-span-2">
+      {/* Izgara — lead + 4 yan haber */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Lead — büyük fotoğraflı */}
+        <Link href={`/news/${lead.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[240px] md:row-span-2">
           {lead.image ? (
             <img src={lead.image} alt={lead.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
           ) : (
@@ -98,22 +77,22 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
           <div className="absolute bottom-0 p-5">
             <span className="text-white/50 text-[10px]">{formatDate(lead.publishedAt)}</span>
-            <h3 className="mt-1 font-black text-white leading-snug text-xl group-hover:text-red-300 transition">{lead.title}</h3>
+            <h3 className="mt-1 font-black text-white leading-snug text-lg group-hover:text-red-300 transition">{lead.title}</h3>
             {lead.excerpt && <p className="mt-2 text-white/50 text-xs line-clamp-2 hidden md:block">{lead.excerpt}</p>}
           </div>
         </Link>
 
-        {/* Side stories */}
+        {/* Yan haberler */}
         {rest.slice(0, 4).map((item) => (
-          <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3 rounded-xl border border-borderc bg-surface2/40 hover:border-zinc-600 transition p-3">
+          <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3 rounded-lg border border-borderc bg-surface2/40 hover:border-zinc-600 transition p-3">
             {item.image && (
-              <div className="w-24 h-20 rounded-lg overflow-hidden shrink-0">
+              <div className="w-24 h-20 rounded-md overflow-hidden shrink-0">
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
               </div>
             )}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-              <h4 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug mt-0.5 line-clamp-3">{item.title}</h4>
+              <span className="text-[10px] font-bold uppercase text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+              <h4 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5 line-clamp-3">{item.title}</h4>
               <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
             </div>
           </Link>
@@ -132,7 +111,7 @@ export default async function HomePage() {
   const featured = featuredData.news;
 
   const hero = featured[0] || news[0];
-  const rest = (hero ? news.filter((n) => n.slug !== hero.slug) : news);
+  const rest = hero ? news.filter((n) => n.slug !== hero.slug) : news;
 
   // Group by category for category sections
   const byCategory = new Map<string, NewsItem[]>();
@@ -142,36 +121,34 @@ export default async function HomePage() {
     byCategory.set(item.category, arr);
   }
 
-  // Trending: first 5 of the remaining
+  // Trending: first 5 for the sidebar
   const trending = rest.slice(0, 5);
-  // Latest news: first 6 after hero for horizontal scroll
-  const latestNews = rest.slice(0, 6);
-  // Latest grid: next 8 after the horizontal strip (no duplication)
-  const latest = rest.slice(6, 14);
+  // Secondary headlines: 3 for the hero right column
+  const secondary = rest.slice(0, 3);
 
   return (
     <div className="mx-auto max-w-[1320px] px-4 py-8">
-      {/* Hero — GÜNDEM24 manşet stili: büyük lead + yan sütun */}
+      {/* Manşet — büyük lead + 3 ikincil manşet */}
       {hero && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <HeroCard item={hero} />
           </div>
-          {/* Yan sütun — en yeni 4 haber */}
-          <div className="hidden lg:flex flex-col gap-4">
-            {latestNews.slice(0, 4).map((item, i) => (
-              <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3">
+          {/* İkincil Manşetler — fotoğraflı kartlar */}
+          <div className="hidden lg:flex flex-col gap-5">
+            {secondary.map((item) => (
+              <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-4 items-center">
                 {item.image ? (
-                  <div className="w-[104px] h-[72px] rounded-lg overflow-hidden shrink-0">
+                  <div className="w-[130px] h-[90px] rounded-lg overflow-hidden shrink-0">
                     <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   </div>
                 ) : (
-                  <div className="w-[104px] h-[72px] rounded-lg bg-surface2 shrink-0" />
+                  <div className="w-[130px] h-[90px] rounded-lg bg-surface2 shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-                  <h3 className="text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug mt-0.5 line-clamp-2">{item.title}</h3>
-                  <p className="text-[11px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
+                  <span className="text-[10px] font-bold tracking-wider text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+                  <h3 className="text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug mt-1 line-clamp-3">{item.title}</h3>
+                  <p className="text-[11px] text-mutedc mt-1.5">{formatDate(item.publishedAt)}</p>
                 </div>
               </Link>
             ))}
@@ -179,85 +156,50 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* Latest News horizontal scroll */}
-      <section className="mt-12">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-6 bg-brand rounded-full" />
-          <h2 className="text-xl font-black text-textc tracking-tight">Son Haberler</h2>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {latestNews.map((item) => (
-            <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group shrink-0 w-64 rounded-xl overflow-hidden border border-borderc bg-surface2/40 hover:border-zinc-600 transition">
-              {item.image && (
-                <div className="h-36 overflow-hidden">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                </div>
-              )}
-              <div className="p-3">
-                <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-                <h3 className="mt-1 text-sm font-bold text-textc group-hover:text-white leading-snug line-clamp-2">{item.title}</h3>
-                <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
-              </div>
-            </Link>
+      {/* Gövde — Haber Kolonu (2/3) + Kenar Çubuğu (1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-14">
+        {/* Haber Kolonu — kategori bölümleri */}
+        <div className="lg:col-span-2 space-y-16">
+          {CATEGORY_SECTIONS.map((cat) => (
+            <CategorySection key={cat} category={cat} items={byCategory.get(cat) || []} />
           ))}
-        </div>
-      </section>
 
-      {/* Trending + Latest mix */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        {/* Trending sidebar */}
-        <div className="md:col-span-1">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-1.5 h-6 bg-brand rounded-full" />
-            <h2 className="text-lg font-black text-textc tracking-tight">Gündem</h2>
-          </div>
-          <div className="divide-y divide-borderc border-y border-borderc">
-            {trending.map((item, i) => (
-              <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="flex items-start gap-3 py-3 group">
-                <span className="text-lg font-black text-zinc-700 group-hover:text-brand transition w-6 shrink-0">{i + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-                  <h3 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug mt-0.5">{item.title}</h3>
-                </div>
-              </Link>
-            ))}
+          {/* Live bar */}
+          <div className="flex items-center gap-3 border border-borderc rounded-xl px-5 py-3 bg-surface2/40 overflow-hidden">
+            <span className="flex items-center gap-1.5 bg-brand text-white text-xs font-black uppercase px-2.5 py-1 rounded-full shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              Canlı
+            </span>
+            <p className="text-sm text-mutedc truncate">Gündemdeki son dakika gelişmelerini anlık takip edin</p>
+            <Link href="/category/world" className="shrink-0 text-xs font-bold text-brand hover:text-brand transition">Tümü →</Link>
           </div>
         </div>
 
-        {/* Latest grid */}
-        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {latest.slice(0, 8).map((item) => (
-            <SmallCard key={item.id || item.slug} item={item} />
-          ))}
-        </div>
-      </div>
+        {/* Kenar Çubuğu */}
+        <aside className="space-y-12">
+          {/* Gündem listesi */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-6 bg-brand rounded-full" />
+              <h2 className="text-[20px] font-extrabold text-textc tracking-tight">Gündem</h2>
+            </div>
+            <div className="divide-y divide-borderc border-y border-borderc">
+              {trending.map((item, i) => (
+                <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="flex items-start gap-3 py-3.5 group">
+                  <span className="text-lg font-black text-zinc-700 group-hover:text-brand transition w-6 shrink-0">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-bold uppercase text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+                    <h3 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5">{item.title}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-      {/* Editor's Picks */}
-      <EditorsPicks />
-
-      {/* Category sections */}
-      {CATEGORY_SECTIONS.map((cat) => (
-        <CategorySection key={cat} category={cat} items={byCategory.get(cat) || []} />
-      ))}
-
-      {/* Live bar */}
-      {rest.length > 0 && (
-        <div className="mt-12 flex items-center gap-3 border border-borderc rounded-xl px-5 py-3 bg-surface2/40 overflow-hidden">
-          <span className="flex items-center gap-1.5 bg-brand text-white text-xs font-black uppercase px-2.5 py-1 rounded-full shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            Live
-          </span>
-          <p className="text-sm text-mutedc truncate">Stay updated with the latest breaking news from around the world</p>
-          <Link href="/category/world" className="shrink-0 text-xs font-bold text-brand hover:text-brand transition">Tümü →</Link>
-        </div>
-      )}
-
-      {/* Trending + Most Read */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-        <MostRead />
-        <div>
+          <EditorsPicks />
+          <MostRead />
           <TrendingTopics />
-        </div>
+        </aside>
       </div>
 
       {/* Newsletter */}
