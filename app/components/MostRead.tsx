@@ -30,7 +30,7 @@ export default function MostRead() {
             </span>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-              <h4 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug">{item.title}</h4>
+              <h4 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug">{item.title}</h4>
             </div>
           </Link>
         ))}

@@ -70,8 +70,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           <div className="absolute bottom-0 left-0 right-0">
             <div className="max-w-[1320px] mx-auto px-4 pb-8">
               <div className="flex items-center gap-3 mb-4">
-                <Link href="/" className="text-white/60 hover:text-white text-sm transition">Home</Link>
-                <span className="text-white/30">/</span>
+                <Link href="/" className="text-mutedc hover:text-brand text-sm transition">Home</Link>
+                <span className="text-mutedc/50">/</span>
                 <Link href={`/category/${news.category.toLowerCase()}`} className="text-red-400 hover:text-red-300 text-xs font-bold uppercase tracking-wide transition">{news.category}</Link>
               </div>
             </div>
@@ -124,7 +124,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
                       <span className="text-xl font-black text-zinc-700 group-hover:text-red-500 transition w-7 shrink-0">{String(i + 1).padStart(2, "0")}</span>
                       <div className="min-w-0">
                         <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
-                        <h4 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug mt-0.5">{item.title}</h4>
+                        <h4 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5">{item.title}</h4>
                       </div>
                     </Link>
                   ))}
@@ -148,7 +148,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
                   )}
                   <div className="p-4">
                     <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
-                    <h3 className="mt-1 font-semibold text-textc group-hover:text-white leading-snug">{item.title}</h3>
+                    <h3 className="mt-1 font-semibold text-textc group-hover:text-brand leading-snug">{item.title}</h3>
                   </div>
                 </Link>
               ))}
