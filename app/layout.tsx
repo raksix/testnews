@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SiteHeader, { SiteFooter } from "./components/SiteHeader";
+import RouteProgress from "./components/RouteProgress";
 export const metadata: Metadata = {
   title: {
     default: "TestNews — Breaking News & Global Headlines",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-surface text-textc antialiased min-h-screen flex flex-col transition-colors">
+        <RouteProgress />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

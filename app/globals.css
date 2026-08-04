@@ -71,3 +71,15 @@ body {
 .marquee:hover {
   animation-play-state: paused;
 }
+
+@keyframes route-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.route-progress {
+  animation: route-progress 500ms ease-out forwards;
+}
