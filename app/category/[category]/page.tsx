@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchNews, type NewsItem } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
+import CategorySlider from "../../components/CategorySlider";
 export const dynamic = "force-dynamic";
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -31,27 +32,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <p className="text-xs text-mutedc">{news.length} article{news.length !== 1 ? "s" : ""} · Latest updates</p>
       </div>
 
-      {/* Manşet — büyük görsel, başlık resim içinde */}
-      {headline && (
-        <Link href={`/news/${headline.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[300px] md:min-h-[440px] mb-10">
-          {headline.image ? (
-            <img src={headline.image} alt={headline.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-surface2" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <span className="text-white/60 text-xs">{formatDate(headline.publishedAt)}</span>
-            <h2 className="mt-2 text-2xl md:text-4xl font-black text-white leading-tight group-hover:text-red-300 transition">{headline.title}</h2>
-            {headline.excerpt && <p className="mt-3 text-white/60 text-sm md:text-base line-clamp-2 max-w-2xl hidden md:block">{headline.excerpt}</p>}
-            <p className="mt-3 text-white/40 text-xs">By {headline.author}</p>
-          </div>
-        </Link>
-      )}
+      {/* Otomatik slider — ilk 5 haber */}
+      <CategorySlider items={[headline, ...rest.slice(0, 4)].filter(Boolean)} />
 
       {/* Öne çıkanlar — 2 geniş kart */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {rest.slice(0, 2).map((item: NewsItem) => (
+        {rest.slice(4, 6).map((item: NewsItem) => (
           <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[320px] border border-borderc">
             {item.image ? (
               <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
@@ -72,7 +58,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
       {/* Diğer haberler — 3'lü grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rest.slice(2).map((item: NewsItem) => (
+        {rest.slice(6).map((item: NewsItem) => (
           <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group block rounded-lg overflow-hidden border border-borderc bg-surface2/40 hover:border-brand/50 hover:shadow-lg hover:shadow-brand/5 transition">
             <div className="relative">
               {item.image ? (

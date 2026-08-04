@@ -41,49 +41,47 @@ function HeroCard({ item }: { item: NewsItem }) {
 
 function CategorySection({ category, items }: { category: string; items: NewsItem[] }) {
   if (items.length === 0) return null;
-  const [lead, ...rest] = items;
 
   return (
     <section>
-      {/* Bölüm başlığı — kırmızı bar + başlık + Tümü */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Bölüm başlığı — kırmızı bar + başlık + View All */}
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-1 h-6 bg-brand rounded-full" />
-          <h2 className="text-[22px] font-extrabold text-textc tracking-tight">{category}</h2>
+          <div className="w-[4px] h-[22px] bg-brand rounded-[2px]" />
+          <h2 className="text-[21px] font-extrabold text-textc tracking-tight">{category}</h2>
         </div>
-        <Link href={`/category/${category.toLowerCase()}`} className="text-xs font-bold text-mutedc hover:text-brand transition uppercase tracking-wide">
-          View All →
+        <Link
+          href={`/category/${category.toLowerCase()}`}
+          className="flex items-center gap-1 text-[13px] font-semibold text-brand hover:text-brand/80 transition"
+        >
+          View All
+          <svg viewBox="0 0 14 14" className="w-[15px] h-[15px]" fill="currentColor">
+            <path d="M5.09619 2.93945q-0.25293 0.08545-0.37939 0.30762-0.04102 0.08545-0.04102 0.25293 0 0.16748 0.04102 0.25293 0.04443 0.08203 1.62353 1.66455l1.58252 1.58252-1.58252 1.58252q-1.5791 1.58252-1.62353 1.66797-0.04102 0.08203-0.04102 0.23584 0 0.15381 0.03418 0.23926 0.0376 0.08203 0.1333 0.18115 0.09912 0.0957 0.18115 0.1333 0.08545 0.03418 0.23926 0.03418 0.15381 0 0.24268-0.04785 0.09229-0.05127 1.90381-1.8628 1.81494-1.81494 1.86279-1.9038 0.05127-0.09229 0.05127-0.25977 0-0.16748-0.04443-0.24951-0.04102-0.08545-1.85938-1.90723l-1.44238-1.42871q-0.33496-0.33496-0.46143-0.41699-0.09912-0.07178-0.19824-0.07178l-0.04102 0q-0.14014 0-0.18115 0.01367z" />
+          </svg>
         </Link>
       </div>
 
-      {/* Izgara — lead + 4 yan haber */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Lead — büyük fotoğraflı */}
-        <Link href={`/news/${lead.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[240px] md:row-span-2">
-          {lead.image ? (
-            <img src={lead.image} alt={lead.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-surface2" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-          <div className="absolute bottom-0 p-5">
-            <span className="text-white/60 text-[10px]">{formatDate(lead.publishedAt)}</span>
-            <h3 className="mt-1 font-black text-white leading-snug text-lg group-hover:text-red-300 transition">{lead.title}</h3>
-          </div>
-        </Link>
-
-        {/* Yan haberler */}
-        {rest.slice(0, 4).map((item) => (
-          <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3 rounded-lg border border-borderc bg-surface2/40 hover:border-zinc-600 transition p-3">
-            {item.image && (
-              <div className="w-24 h-20 rounded-md overflow-hidden shrink-0">
+      {/* Yatay satır — foto üstte, başlık altta */}
+      <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide">
+        {items.slice(0, 5).map((item) => (
+          <Link
+            key={item.id || item.slug}
+            href={`/news/${item.slug}`}
+            className="group flex-[1_1_0] min-w-[220px] max-w-[320px]"
+          >
+            <div className="w-full h-[180px] rounded-[8px] overflow-hidden bg-surface2">
+              {item.image ? (
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-            )}
-            <div className="min-w-0">
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-brand/15 to-surface2 flex items-center justify-center">
+                  <span className="text-3xl font-black text-brand/50">{item.category.charAt(0)}</span>
+                </div>
+              )}
+            </div>
+            <div className="mt-2.5">
               <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
-              <h4 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5 line-clamp-3">{item.title}</h4>
-              <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
+              <h3 className="mt-1 text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug line-clamp-2">{item.title}</h3>
+              <p className="text-[11px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
             </div>
           </Link>
         ))}
