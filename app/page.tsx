@@ -8,20 +8,11 @@ import NewsletterSignup from "./components/NewsletterSignup";
 export const dynamic = "force-dynamic";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 const CATEGORY_SECTIONS = ["World", "Technology", "Business", "Sports", "Science", "Health", "Entertainment"];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  World: "Dünya",
-  Technology: "Teknoloji",
-  Business: "Ekonomi",
-  Sports: "Spor",
-  Science: "Bilim",
-  Health: "Sağlık",
-  Entertainment: "Magazin",
-};
 
 function HeroCard({ item }: { item: NewsItem }) {
   return (
@@ -34,7 +25,7 @@ function HeroCard({ item }: { item: NewsItem }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
         <div className="flex items-center gap-2 mb-3">
-          <span className="bg-brand text-white text-[10px] font-black uppercase px-2.5 py-1 rounded tracking-wider">Son Dakika</span>
+          <span className="bg-brand text-white text-[10px] font-black uppercase px-2.5 py-1 rounded tracking-wider">Breaking</span>
           <span className="text-white/50 text-xs">{formatDate(item.publishedAt)}</span>
         </div>
         <h2 className="text-2xl md:text-4xl font-black text-white leading-tight group-hover:text-red-300 transition">{item.title}</h2>
@@ -58,10 +49,10 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-brand rounded-full" />
-          <h2 className="text-[22px] font-extrabold text-textc tracking-tight">{CATEGORY_LABELS[category] || category}</h2>
+          <h2 className="text-[22px] font-extrabold text-textc tracking-tight">{category}</h2>
         </div>
         <Link href={`/category/${category.toLowerCase()}`} className="text-xs font-bold text-mutedc hover:text-brand transition uppercase tracking-wide">
-          Tümü →
+          View All →
         </Link>
       </div>
 
@@ -91,7 +82,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
               </div>
             )}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+              <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
               <h4 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5 line-clamp-3">{item.title}</h4>
               <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
             </div>
@@ -146,7 +137,7 @@ export default async function HomePage() {
                   <div className="w-[130px] h-[90px] rounded-lg bg-surface2 shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <span className="text-[10px] font-bold tracking-wider text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+                  <span className="text-[10px] font-bold tracking-wider text-brand">{item.category}</span>
                   <h3 className="text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug mt-1 line-clamp-3">{item.title}</h3>
                   <p className="text-[11px] text-mutedc mt-1.5">{formatDate(item.publishedAt)}</p>
                 </div>
@@ -168,10 +159,10 @@ export default async function HomePage() {
           <div className="flex items-center gap-3 border border-borderc rounded-xl px-5 py-3 bg-surface2/40 overflow-hidden">
             <span className="flex items-center gap-1.5 bg-brand text-white text-xs font-black uppercase px-2.5 py-1 rounded-full shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              Canlı
+              Live
             </span>
-            <p className="text-sm text-mutedc truncate">Gündemdeki son dakika gelişmelerini anlık takip edin</p>
-            <Link href="/category/world" className="shrink-0 text-xs font-bold text-brand hover:text-brand transition">Tümü →</Link>
+            <p className="text-sm text-mutedc truncate">Stay updated with the latest breaking news around the clock</p>
+            <Link href="/category/world" className="shrink-0 text-xs font-bold text-brand hover:text-brand transition">View All →</Link>
           </div>
         </div>
 
@@ -181,14 +172,14 @@ export default async function HomePage() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1 h-6 bg-brand rounded-full" />
-              <h2 className="text-[20px] font-extrabold text-textc tracking-tight">Gündem</h2>
+              <h2 className="text-[20px] font-extrabold text-textc tracking-tight">Trending</h2>
             </div>
             <div className="divide-y divide-borderc border-y border-borderc">
               {trending.map((item, i) => (
                 <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="flex items-start gap-3 py-3.5 group">
                   <span className="text-lg font-black text-zinc-700 group-hover:text-brand transition w-6 shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-bold uppercase text-brand">{CATEGORY_LABELS[item.category] || item.category}</span>
+                    <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
                     <h3 className="text-sm font-semibold text-textc group-hover:text-brand transition leading-snug mt-0.5">{item.title}</h3>
                   </div>
                 </Link>
