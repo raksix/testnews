@@ -18,7 +18,6 @@ const NAV = [
 export default function SiteHeader() {
   const pathname = usePathname();
   const [breaking, setBreaking] = useState<NewsItem[]>([]);
-  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
     fetch(`${API_URL}/api/news?limit=8`)
@@ -26,12 +25,6 @@ export default function SiteHeader() {
       .then((d) => setBreaking(d.news || []))
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (breaking.length === 0) return;
-    const timer = setInterval(() => setOffset((o) => (o + 1) % breaking.length), 3500);
-    return () => clearInterval(timer);
-  }, [breaking.length]);
 
   if (pathname.startsWith("/admin")) return null;
 
@@ -58,9 +51,10 @@ export default function SiteHeader() {
             ))}
           </nav>
           <div className="flex items-center gap-3.5 shrink-0">
-            <Link href="/search" aria-label="Ara" className="hidden sm:block">
-              <svg viewBox="0 0 14 14" className="w-5 h-5 text-textc">
-                <path d="M6 .9q-.1.02-.3.06-.75.1-1.43.6-1.3.9-1.8 2.3-.24.77-.24 1.6 0 .5.06.74.06.27.16.65.25.98.78 1.86.53.88 1.26 1.53.53.47 1.06.78.54.31 1.2.57 1.38.5 2.87.38 1.5-.13 2.79-.86.16-.09.43-.27.27-.18.38-.27l.07-.07 1.44 1.44q1.45 1.43 1.56 1.5.11.06.31.06.2 0 .3-.04.12-.05.24-.17.13-.13.17-.24.05-.11.05-.31 0-.2-.07-.3-.06-.12-1.5-1.57L11.5 6.9l.07-.09q.08-.07.26-.33 1.07-1.6 1.16-3.51.09-1.9-.83-3.58A4.6 4.6 0 0 0 9.76-.78Q8.98-.98 8.14-1q-.56 0-.64.02zM6.78.9q.42-.05.94-.1.61-.03 1.03.12.54.16 1.02.42.96.5 1.67 1.4.7.88.98 1.94.09.36.12.64.02.28.02.66 0 .9-.25 1.69-.51 1.5-1.74 2.47-1.22.97-2.8 1.14-.26.01-.64 0-.38-.01-.63-.04-.7-.11-1.35-.4a4.4 4.4 0 0 1-1.22-.73q-.18-.16-.45-.44-.28-.28-.43-.48a3.9 3.9 0 0 1-.97-2.2 5 5 0 0 1 .07-1.17 3.7 3.7 0 0 1 .83-1.94 3.3 3.3 0 0 1 1.76-1.15q.9-.22 1.78.01.23.07.55.17.3.11.45.11l.34-.02z" fill="currentColor" />
+            <Link href="/search" aria-label="Search" className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg border border-borderc hover:border-brand hover:text-brand transition">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.3-4.3" />
               </svg>
             </Link>
             <Link href="/admin" className="bg-brand hover:bg-brand/90 text-white text-[14px] font-semibold px-3.5 py-2 rounded-lg transition whitespace-nowrap">
@@ -91,8 +85,8 @@ export default function SiteHeader() {
           </span>
           <div className="relative flex-1 overflow-hidden h-6">
             {breaking.length > 0 && (
-              <div className="flex items-center gap-10 whitespace-nowrap transition-transform duration-500" style={{ transform: `translateX(-${offset * 100}%)` }}>
-                {breaking.map((item, i) => (
+              <div className="marquee flex items-center gap-12 whitespace-nowrap">
+                {[...breaking, ...breaking].map((item, i) => (
                   <Link key={i} href={`/news/${item.slug}`} className="text-[14px] font-semibold text-textc hover:text-brand transition shrink-0">
                     {item.title}
                   </Link>

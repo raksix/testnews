@@ -68,7 +68,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           <img src={news.image} alt={news.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0">
-            <div className="max-w-6xl mx-auto px-4 pb-8">
+            <div className="max-w-[1320px] mx-auto px-4 pb-8">
               <div className="flex items-center gap-3 mb-4">
                 <Link href="/" className="text-white/60 hover:text-white text-sm transition">Home</Link>
                 <span className="text-white/30">/</span>
@@ -79,7 +79,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-[1320px] mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Main article column */}
           <article className="lg:col-span-8 -mt-8 relative z-10">

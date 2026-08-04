@@ -67,9 +67,8 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
           <div className="absolute bottom-0 p-5">
-            <span className="text-white/50 text-[10px]">{formatDate(lead.publishedAt)}</span>
+            <span className="text-white/60 text-[10px]">{formatDate(lead.publishedAt)}</span>
             <h3 className="mt-1 font-black text-white leading-snug text-lg group-hover:text-red-300 transition">{lead.title}</h3>
-            {lead.excerpt && <p className="mt-2 text-white/50 text-xs line-clamp-2 hidden md:block">{lead.excerpt}</p>}
           </div>
         </Link>
 
@@ -115,7 +114,7 @@ export default async function HomePage() {
   // Trending: first 5 for the sidebar
   const trending = rest.slice(0, 5);
   // Secondary headlines: 3 for the hero right column
-  const secondary = rest.slice(0, 3);
+  const secondary = rest.slice(0, 4);
 
   return (
     <div className="mx-auto max-w-[1320px] px-4 py-8">

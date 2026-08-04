@@ -28,12 +28,12 @@ export default function EditorsPicks() {
           Editor&apos;s <span className="text-yellow-500">Picks</span>
         </h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {picks.map((item, i) => (
           <Link
             key={item.id || item.slug}
             href={`/news/${item.slug}`}
-            className="group relative block rounded-xl overflow-hidden min-h-[200px] bg-gradient-to-br from-surface2 to-borderc"
+            className="group relative block rounded-xl overflow-hidden min-h-[180px] bg-gradient-to-br from-surface2 to-borderc"
           >
             {item.image && (
               <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition duration-500" />
