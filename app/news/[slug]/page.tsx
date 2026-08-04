@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { fetchNewsBySlug, fetchNews, type NewsItem } from "@/lib/api";
 import Comments from "@/app/components/Comments";
 import InfiniteFeed from "@/app/components/InfiniteFeed";
+import ShareButtons from "@/app/components/ShareButtons";
+const SITE = "https://testnews.fermag.com.tr";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +43,34 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const news = await fetchNewsBySlug(slug);
   if (!news) return { title: "Article Not Found" };
+  const url = `${SITE}/news/${news.slug}`;
+  const keywords = [news.category, "news", "breaking news", news.author, ...news.title.toLowerCase().split(" ").slice(0, 8)].join(", ");
   return {
     title: news.title,
     description: news.excerpt,
-    openGraph: { title: news.title, description: news.excerpt, images: news.image ? [news.image] : [] },
+    keywords,
+    alternates: { canonical: url },
+    robots: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+    authors: [{ name: news.author }],
+    category: news.category,
+    openGraph: {
+      title: news.title,
+      description: news.excerpt,
+      url,
+      siteName: "TestNews",
+      locale: "en_US",
+      type: "article",
+      publishedTime: news.publishedAt,
+      authors: [news.author],
+      section: news.category,
+      images: news.image ? [{ url: news.image, width: 1200, height: 630, alt: news.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: news.title,
+      description: news.excerpt,
+      images: news.image ? [news.image] : [],
+    },
   };
 }
 
@@ -59,6 +85,23 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
 
   const relatedItems = related.filter((r) => r.slug !== slug).slice(0, 6);
   const rightSidebar = related.filter((r) => r.slug !== slug).slice(1, 5);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: news.title,
+    description: news.excerpt,
+    image: news.image ? [news.image] : undefined,
+    datePublished: news.publishedAt,
+    author: { "@type": "Person", name: news.author },
+    publisher: {
+      "@type": "Organization",
+      name: "TestNews",
+      logo: { "@type": "ImageObject", url: `${SITE}/icon.png` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE}/news/${news.slug}` },
+    articleSection: news.category,
+  };
 
   return (
     <div className="bg-surface min-h-screen">
@@ -84,6 +127,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           {/* Main article column */}
           <article className="lg:col-span-8 -mt-8 relative z-10">
             <h1 className="text-3xl md:text-5xl font-black leading-tight text-textc">{news.title}</h1>
+            <div className="mt-5">
+              <ShareButtons title={news.title} />
+            </div>
 
             <div className="flex items-center gap-3 mt-6 pb-6 border-b border-borderc">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center font-bold text-white text-sm">{news.author.charAt(0)}</div>
@@ -106,6 +152,11 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
             )}
 
             <div className="mt-8 prose-custom">{renderContent(news.content)}</div>
+
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
 
             <Comments slug={slug} />
 

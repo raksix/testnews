@@ -119,6 +119,7 @@ export async function createNews(
     updatedAt: new Date().toISOString(),
   };
   const result = await db.collection<NewsItem>("news").insertOne(doc as any);
+  seedCommentsForNews(doc.slug).catch(() => {});
   return serialize({ ...doc, _id: result.insertedId });
 }
 
@@ -268,4 +269,67 @@ export async function createComment(
   };
   const result = await db.collection<Comment>("comments").insertOne(doc as any);
   return { ...doc, id: result.insertedId.toString() };
+}
+
+const COMMENT_NAMES = [
+  "Michael", "Sarah", "John", "Emily", "David", "Jessica", "Chris",
+  "Amanda", "Kevin", "Laura", "Jason", "Megan", "Brian", "Nicole",
+  "Ryan", "Ashley", "Daniel", "Rachel", "Matthew", "Hannah", "James",
+  "Sophie", "Andrew", "Olivia", "Thomas", "Emma", "Robert", "Grace",
+];
+
+const COMMENT_TEXTS = [
+  "This is actually a really important development. Thanks for covering it.",
+  "Finally some proper journalism on this topic.",
+  "I can't believe this hasn't gotten more attention.",
+  "The details here are a bit thin, but interesting nonetheless.",
+  "Wait, is this confirmed by official sources?",
+  "Great analysis. This puts things in perspective.",
+  "About time someone reported this properly.",
+  "I've been following this for weeks, good to see it summarized.",
+  "This will have bigger consequences than people realize.",
+  "Interesting take, though I'd like to see more data.",
+  "The headline says it all, honestly.",
+  "This comment section is more balanced than I expected.",
+  "Sharing this with my colleagues right now.",
+  "One of the better articles I've read on this subject.",
+  "Can we get a follow-up on this? Would love more context.",
+  "Not sure I agree with the conclusion, but the reporting is solid.",
+  "This is exactly why I read this site.",
+  "Wild stuff. The next few months will be telling.",
+  "Good breakdown. Easy to understand even for non-experts.",
+  "I was just talking about this yesterday!",
+  "The sources check out. Reliable piece.",
+  "This deserves way more coverage.",
+  "Honestly refreshing to see unbiased reporting.",
+  "Bookmarked. Very useful summary.",
+  "The comments here are actually civil, nice change.",
+  "Strong piece. Keep up the good work.",
+  "This changes the picture significantly.",
+  "I'll be watching how this develops.",
+  "Excellent breakdown, very clear and concise.",
+  "Someone had to say this. Glad it was this outlet.",
+];
+
+// Seed 8-20 realistic comments for a news article, spread over the last 48h
+export async function seedCommentsForNews(newsSlug: string): Promise<void> {
+  const db = await getDb();
+  const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
+  if (existing > 0) return;
+  const count = 8 + Math.floor(Math.random() * 13); // 8-20
+  const now = Date.now();
+  const docs: Comment[] = [];
+  const usedNames = new Set<string>();
+  for (let i = 0; i < count; i++) {
+    let name = COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)];
+    if (usedNames.has(name)) name = name + " " + Math.floor(Math.random() * 99);
+    usedNames.add(name);
+    docs.push({
+      newsSlug,
+      name,
+      content: COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)],
+      createdAt: new Date(now - Math.floor(Math.random() * 48 * 60 * 60 * 1000)).toISOString(),
+    });
+  }
+  if (docs.length) await db.collection<Comment>("comments").insertMany(docs as any);
 }
