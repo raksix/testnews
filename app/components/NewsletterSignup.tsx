@@ -14,8 +14,8 @@ export default function NewsletterSignup() {
   return (
     <section className="mt-16 rounded-2xl border border-borderc bg-gradient-to-br from-red-950/30 via-surface2 to-surface2 p-8 md:p-12 text-center">
       <div className="max-w-md mx-auto">
-        <div className="w-14 h-14 rounded-full bg-red-600/20 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="w-14 h-14 rounded-full bg-brand/20 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-7 h-7 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
           </svg>
         </div>
@@ -39,7 +39,7 @@ export default function NewsletterSignup() {
             />
             <button
               type="submit"
-              className="bg-red-600 hover:bg-red-500 text-white font-bold text-sm px-6 py-3 rounded-xl transition whitespace-nowrap"
+              className="bg-brand hover:bg-brand text-white font-bold text-sm px-6 py-3 rounded-xl transition whitespace-nowrap"
             >
               Subscribe
             </button>

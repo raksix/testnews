@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-black text-textc mb-2">
         {query ? (
-          <>Search: <span className="text-red-500">&quot;{query}&quot;</span></>
+          <>Search: <span className="text-brand">&quot;{query}&quot;</span></>
         ) : (
           "Search News"
         )}
@@ -47,7 +47,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                 </div>
               )}
               <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
+                <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
                 <h3 className="font-semibold text-textc group-hover:text-white transition leading-snug">{item.title}</h3>
                 <p className="text-xs text-mutedc mt-1 line-clamp-1">{item.excerpt}</p>
                 <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)} · {item.author}</p>
@@ -61,7 +61,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <div className="text-center py-16">
           <p className="text-6xl mb-4">🔍</p>
           <p className="text-mutedc">No results found for &quot;{query}&quot;</p>
-          <Link href="/" className="text-red-500 hover:text-red-400 text-sm font-semibold mt-4 inline-block">← Back to Home</Link>
+          <Link href="/" className="text-brand hover:text-brand text-sm font-semibold mt-4 inline-block">← Back to Home</Link>
         </div>
       )}
     </div>

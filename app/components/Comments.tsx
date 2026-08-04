@@ -85,11 +85,11 @@ export default function Comments({ slug }: { slug: string }) {
           className="w-full bg-surface2 border border-borderc rounded-lg px-3 py-2 text-sm text-textc placeholder-mutedc focus:outline-none focus:border-red-500 transition resize-none"
           required
         />
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-brand">{error}</p>}
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold text-sm px-5 py-2 rounded-lg transition"
+          className="bg-brand hover:bg-brand disabled:opacity-50 text-white font-bold text-sm px-5 py-2 rounded-lg transition"
         >
           {loading ? "Posting..." : "Post Comment"}
         </button>
@@ -102,7 +102,7 @@ export default function Comments({ slug }: { slug: string }) {
         {comments.map((c) => (
           <div key={c.id} className="p-4 rounded-lg border border-borderc bg-surface2/40">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-zinc-600 flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand to-zinc-600 flex items-center justify-center text-xs font-bold text-white">
                 {c.name === "Anonymous" ? "?" : c.name.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-semibold text-textc">{c.name}</span>

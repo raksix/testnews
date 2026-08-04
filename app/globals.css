@@ -16,6 +16,8 @@
   --text-s: #18181b;
   --muted-s: #71717a;
   --border-s: #e4e4e7;
+  --brand: #d6122a;
+  --band: #14161b;
   color-scheme: light;
 }
 
@@ -25,6 +27,8 @@
   --text-s: #f4f4f5;
   --muted-s: #a1a1aa;
   --border-s: #27272a;
+  --brand: #d6122a;
+  --band: #14161b;
   color-scheme: dark;
 }
 
@@ -34,6 +38,8 @@
   --color-textc: var(--text-s);
   --color-mutedc: var(--muted-s);
   --color-borderc: var(--border-s);
+  --color-brand: var(--brand);
+  --color-band: var(--band);
 }
 
 body {

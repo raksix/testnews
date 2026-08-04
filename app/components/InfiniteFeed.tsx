@@ -42,13 +42,13 @@ function ArticleBlock({ item }: { item: NewsItem }) {
 
       <div className="mt-8">
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-red-500 text-xs font-bold uppercase tracking-wide bg-red-500/10 px-2.5 py-1 rounded-full">{item.category}</span>
+          <span className="text-brand text-xs font-bold uppercase tracking-wide bg-brand/10 px-2.5 py-1 rounded-full">{item.category}</span>
           <span className="text-xs text-mutedc">{formatDate(item.publishedAt)}</span>
         </div>
         <h2 className="text-3xl md:text-5xl font-black leading-tight text-textc">{item.title}</h2>
 
         <div className="flex items-center gap-3 mt-6 pb-6 border-b border-borderc">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center font-bold text-white text-sm">{item.author.charAt(0)}</div>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-red-800 flex items-center justify-center font-bold text-white text-sm">{item.author.charAt(0)}</div>
           <div>
             <p className="text-sm font-semibold text-textc">{item.author}</p>
             <p className="text-xs text-mutedc">{formatDate(item.publishedAt)}</p>

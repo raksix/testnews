@@ -13,18 +13,28 @@ function formatDate(iso: string) {
 
 const CATEGORY_SECTIONS = ["World", "Technology", "Business", "Sports", "Science", "Health", "Entertainment"];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  World: "Dünya",
+  Technology: "Teknoloji",
+  Business: "Ekonomi",
+  Sports: "Spor",
+  Science: "Bilim",
+  Health: "Sağlık",
+  Entertainment: "Magazin",
+};
+
 function HeroCard({ item }: { item: NewsItem }) {
   return (
-    <Link href={`/news/${item.slug}`} className="group relative block rounded-2xl overflow-hidden col-span-1 md:col-span-3 min-h-[320px] md:min-h-[440px]">
+    <Link href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[520px]">
       {item.image ? (
         <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/30 to-surface2" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand/30 to-surface2" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
         <div className="flex items-center gap-2 mb-3">
-          <span className="bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">Breaking</span>
+          <span className="bg-brand text-white text-[10px] font-black uppercase px-2.5 py-1 rounded tracking-wider">Son Dakika</span>
           <span className="text-white/50 text-xs">{formatDate(item.publishedAt)}</span>
         </div>
         <h2 className="text-2xl md:text-4xl font-black text-white leading-tight group-hover:text-red-300 transition">{item.title}</h2>
@@ -52,7 +62,7 @@ function SmallCard({ item }: { item: NewsItem }) {
       )}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-red-500">{item.category}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-brand">{item.category}</span>
           <span className="text-[10px] text-mutedc">{formatDate(item.publishedAt)}</span>
         </div>
         <h3 className="font-bold text-textc group-hover:text-white leading-snug">{item.title}</h3>
@@ -69,11 +79,11 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
     <section className="mt-14">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-6 bg-red-600 rounded-full" />
-          <h2 className="text-xl font-black text-textc tracking-tight">{category}</h2>
+          <div className="w-1.5 h-6 bg-brand rounded-full" />
+          <h2 className="text-xl font-black text-textc tracking-tight">{CATEGORY_LABELS[category] || category}</h2>
         </div>
-        <Link href={`/category/${category.toLowerCase()}`} className="text-xs font-bold text-mutedc hover:text-red-500 transition uppercase tracking-wide">
-          View All →
+        <Link href={`/category/${category.toLowerCase()}`} className="text-xs font-bold text-mutedc hover:text-brand transition uppercase tracking-wide">
+          Tümü →
         </Link>
       </div>
 
@@ -83,7 +93,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
           {lead.image ? (
             <img src={lead.image} alt={lead.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-surface2" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-surface2" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
           <div className="absolute bottom-0 p-5">
@@ -102,7 +112,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
               </div>
             )}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
+              <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
               <h4 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug mt-0.5 line-clamp-3">{item.title}</h4>
               <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
             </div>
@@ -140,15 +150,40 @@ export default async function HomePage() {
   const latest = rest.slice(6, 14);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* Hero — full width */}
-      {hero && <HeroCard item={hero} />}
+    <div className="mx-auto max-w-[1320px] px-4 py-8">
+      {/* Hero — GÜNDEM24 manşet stili: büyük lead + yan sütun */}
+      {hero && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <HeroCard item={hero} />
+          </div>
+          {/* Yan sütun — en yeni 4 haber */}
+          <div className="hidden lg:flex flex-col gap-4">
+            {latestNews.slice(0, 4).map((item, i) => (
+              <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-3">
+                {item.image ? (
+                  <div className="w-[104px] h-[72px] rounded-lg overflow-hidden shrink-0">
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  </div>
+                ) : (
+                  <div className="w-[104px] h-[72px] rounded-lg bg-surface2 shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
+                  <h3 className="text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug mt-0.5 line-clamp-2">{item.title}</h3>
+                  <p className="text-[11px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Latest News horizontal scroll */}
-      <section className="mt-10">
+      <section className="mt-12">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-6 bg-red-600 rounded-full" />
-          <h2 className="text-xl font-black text-textc tracking-tight">Latest News</h2>
+          <div className="w-1.5 h-6 bg-brand rounded-full" />
+          <h2 className="text-xl font-black text-textc tracking-tight">Son Haberler</h2>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {latestNews.map((item) => (
@@ -159,7 +194,7 @@ export default async function HomePage() {
                 </div>
               )}
               <div className="p-3">
-                <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
+                <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
                 <h3 className="mt-1 text-sm font-bold text-textc group-hover:text-white leading-snug line-clamp-2">{item.title}</h3>
                 <p className="text-[10px] text-mutedc mt-1">{formatDate(item.publishedAt)}</p>
               </div>
@@ -173,15 +208,15 @@ export default async function HomePage() {
         {/* Trending sidebar */}
         <div className="md:col-span-1">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-1.5 h-6 bg-red-600 rounded-full" />
-            <h2 className="text-lg font-black text-textc tracking-tight">Trending Now</h2>
+            <div className="w-1.5 h-6 bg-brand rounded-full" />
+            <h2 className="text-lg font-black text-textc tracking-tight">Gündem</h2>
           </div>
           <div className="divide-y divide-borderc border-y border-borderc">
             {trending.map((item, i) => (
               <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="flex items-start gap-3 py-3 group">
-                <span className="text-lg font-black text-zinc-700 group-hover:text-red-500 transition w-6 shrink-0">{i + 1}</span>
+                <span className="text-lg font-black text-zinc-700 group-hover:text-brand transition w-6 shrink-0">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase text-red-500">{item.category}</span>
+                  <span className="text-[10px] font-bold uppercase text-brand">{item.category}</span>
                   <h3 className="text-sm font-semibold text-textc group-hover:text-white transition leading-snug mt-0.5">{item.title}</h3>
                 </div>
               </Link>
@@ -208,12 +243,12 @@ export default async function HomePage() {
       {/* Live bar */}
       {rest.length > 0 && (
         <div className="mt-12 flex items-center gap-3 border border-borderc rounded-xl px-5 py-3 bg-surface2/40 overflow-hidden">
-          <span className="flex items-center gap-1.5 bg-red-600 text-white text-xs font-black uppercase px-2.5 py-1 rounded-full shrink-0">
+          <span className="flex items-center gap-1.5 bg-brand text-white text-xs font-black uppercase px-2.5 py-1 rounded-full shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             Live
           </span>
           <p className="text-sm text-mutedc truncate">Stay updated with the latest breaking news from around the world</p>
-          <Link href="/category/world" className="shrink-0 text-xs font-bold text-red-500 hover:text-red-400 transition">View All →</Link>
+          <Link href="/category/world" className="shrink-0 text-xs font-bold text-brand hover:text-brand transition">Tümü →</Link>
         </div>
       )}
 

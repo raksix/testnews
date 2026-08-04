@@ -45,7 +45,7 @@ export default function QuickSearch() {
               />
               <button
                 type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-500 text-white font-bold text-sm px-4 py-2 rounded-xl transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-brand hover:bg-brand text-white font-bold text-sm px-4 py-2 rounded-xl transition"
               >
                 Search
               </button>

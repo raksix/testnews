@@ -27,7 +27,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Category</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Category</p>
         <h1 className="text-4xl font-black text-textc">{name} News</h1>
         <p className="text-mutedc mt-2">{news.length} article{news.length !== 1 ? "s" : ""} · Latest updates</p>
       </div>
