@@ -43,7 +43,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
               <div className="w-full h-full bg-gradient-to-br from-brand/20 to-surface2" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 max-w-3xl">
+            <div className="absolute bottom-0 left-0 right-0 px-[34px] md:px-[50px] py-6 md:py-10 max-w-3xl">
               <div className="flex items-center gap-2 mb-3">
                 <span className="bg-brand text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded tracking-wider">{item.category}</span>
                 <span className="text-white/60 text-xs">{formatDate(item.publishedAt)}</span>
