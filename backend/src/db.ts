@@ -119,7 +119,7 @@ export async function createNews(
     updatedAt: new Date().toISOString(),
   };
   const result = await db.collection<NewsItem>("news").insertOne(doc as any);
-  seedCommentsForNews(doc.slug).catch(() => {});
+  seedCommentsForNews(doc.slug, doc.title, doc.category).catch(() => {});
   return serialize({ ...doc, _id: result.insertedId });
 }
 
@@ -311,8 +311,69 @@ const COMMENT_TEXTS = [
   "Someone had to say this. Glad it was this outlet.",
 ];
 
-// Seed 8-20 realistic comments for a news article, spread over the last 48h
-export async function seedCommentsForNews(newsSlug: string): Promise<void> {
+// Seed 8-20 realistic comments for a news article, spread over the last 48h.
+// ~60% generic, ~40% tailored to the article's topic + category.
+const STOPWORDS = new Set([
+  "the","a","an","and","or","but","of","to","in","on","for","with","at","by",
+  "from","as","is","are","was","were","be","been","this","that","these","those",
+  "it","its","his","her","their","they","he","she","we","you","i","not","no",
+  "says","said","say","after","before","over","under","into","about","up","down",
+  "new","first","last","more","most","than","so","if","can","will","would","could",
+  "has","have","had","do","does","did","who","what","when","where","why","how",
+]);
+
+const CATEGORY_COMMENTS: Record<string, string[]> = {
+  Technology: [
+    "The engineering behind this is genuinely impressive.",
+    "As a developer, I can tell this took serious work to pull off.",
+    "Tech moves fast, but this is a real step forward.",
+    "Curious what the open-source community thinks of this one.",
+  ],
+  Business: [
+    "Markets are definitely going to react to this one.",
+    "The analysts are going to have a field day with this.",
+    "Smart move, but the margins will tell the real story.",
+    "This is what happens when leadership plans ahead.",
+  ],
+  Sports: [
+    "The form this season has been something else.",
+    "The coaching staff deserves a lot of credit here.",
+    "That was a performance worth staying up for.",
+    "Injuries aside, the squad depth really showed tonight.",
+  ],
+  Science: [
+    "Fascinating research. Peer review will be key here.",
+    "The methodology looks solid, excited to see replication studies.",
+    "This could open a whole new line of inquiry.",
+    "Science at its best — patient, rigorous, promising.",
+  ],
+  Health: [
+    "The public health impact of this is significant.",
+    "Doctors will be watching the follow-up data closely.",
+    "As someone in healthcare, this matters more than it seems.",
+    "Prevention beats treatment — glad this is getting attention.",
+  ],
+  Entertainment: [
+    "The box office numbers will be interesting to watch.",
+    "Critics are split, but the audience seems to love it.",
+    "The production value alone is worth the hype.",
+    "This one is going to be talked about for a while.",
+  ],
+};
+
+function topicFromTitle(title: string): string {
+  const words = title
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 3 && !STOPWORDS.has(w));
+  return words.slice(0, 2).join(" ") || "this story";
+}
+
+export async function seedCommentsForNews(
+  newsSlug: string,
+  title?: string,
+  category?: string
+): Promise<void> {
   const db = await getDb();
   const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
   if (existing > 0) return;
@@ -320,6 +381,25 @@ export async function seedCommentsForNews(newsSlug: string): Promise<void> {
   const now = Date.now();
   const docs: Comment[] = [];
   const usedNames = new Set<string>();
+
+  const topic = title ? topicFromTitle(title) : "";
+  const catPool = (category && CATEGORY_COMMENTS[category]) || [];
+  // Topic-aware comment templates
+  const topicPool = topic
+    ? [
+        `The situation around ${topic} is way more complex than this article suggests.`,
+        `I've been following ${topic} closely and this summary is spot on.`,
+        `Finally someone covering ${topic} properly.`,
+        `This ${topic} story is going to have ripple effects.`,
+        `Not sure everyone realizes how big ${topic} really is.`,
+        `Great context on ${topic} — the details matter here.`,
+        `Living through ${topic} right now and this is accurate.`,
+        `More reporting like this on ${topic}, please.`,
+      ]
+    : [];
+
+  const pool = [...COMMENT_TEXTS, ...catPool, ...topicPool];
+
   for (let i = 0; i < count; i++) {
     let name = COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)];
     if (usedNames.has(name)) name = name + " " + Math.floor(Math.random() * 99);
@@ -327,7 +407,7 @@ export async function seedCommentsForNews(newsSlug: string): Promise<void> {
     docs.push({
       newsSlug,
       name,
-      content: COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)],
+      content: pool[Math.floor(Math.random() * pool.length)],
       createdAt: new Date(now - Math.floor(Math.random() * 48 * 60 * 60 * 1000)).toISOString(),
     });
   }
