@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, type ReactNode, type WheelEvent } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 // Horizontal scroll row that works with mouse drag + wheel on desktop,
 // while keeping native touch scroll on mobile.
@@ -17,7 +17,7 @@ export default function DragScroll({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const onWheel = (e: WheelEvent) => {
+    const onWheel = (e: globalThis.WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         el.scrollLeft += e.deltaY;
         e.preventDefault();
