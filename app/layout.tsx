@@ -42,6 +42,29 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  name: "Newsluma",
+                  url: "https://newsluma.com",
+                  description: "Breaking news, world headlines, technology, business, sports and science coverage — updated around the clock.",
+                  publisher: { "@type": "Organization", name: "Newsluma" },
+                },
+                {
+                  "@type": "Organization",
+                  name: "Newsluma",
+                  url: "https://newsluma.com",
+                  logo: "https://newsluma.com/icon.png",
+                },
+              ],
+            }),
+          }}
+        />
       </body>
     </html>
   );
