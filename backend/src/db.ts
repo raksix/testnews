@@ -541,15 +541,19 @@ export async function addGradualComments(): Promise<number> {
     if (existing > 60) continue;
     const parentCount = 1 + Math.floor(Math.random() * 2);
     const docs: Comment[] = [];
+    // Comments land within the last ~12h, spaced 5-15min apart so
+    // they look human (never bunched up at the same timestamp).
+    let lastTs = Date.now() - Math.floor(Math.random() * 10 * 60 * 1000);
+    const floor = Math.max(new Date(n.publishedAt).getTime(), Date.now() - 12 * 60 * 60 * 1000);
     for (let i = 0; i < parentCount; i++) {
+      lastTs -= 5 * 60 * 1000 + Math.floor(Math.random() * 10 * 60 * 1000);
+      if (lastTs < floor) lastTs = floor;
       docs.push({
         newsSlug,
         name: COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)],
         content: COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)],
         likes: Math.floor(Math.random() * 15),
-        createdAt: new Date(
-          Math.min(Date.now(), new Date(n.publishedAt).getTime() + Math.floor(Math.random() * 48 * 60 * 60 * 1000))
-        ).toISOString(),
+        createdAt: new Date(lastTs).toISOString(),
       });
     }
     if (docs.length) {
