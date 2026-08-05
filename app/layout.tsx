@@ -3,6 +3,7 @@ import "./globals.css";
 import SiteHeader, { SiteFooter } from "./components/SiteHeader";
 import RouteProgress from "./components/RouteProgress";
 import Tracker from "./components/Tracker";
+import CookieConsent from "./components/CookieConsent";
 export const metadata: Metadata = {
   metadataBase: new URL("https://newsluma.com"),
   title: {
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <CookieConsent />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

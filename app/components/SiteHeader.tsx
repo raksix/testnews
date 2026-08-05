@@ -77,6 +77,11 @@ export function SiteFooter() {
         <div className="flex items-center gap-2">
           <span className="text-[22px] font-extrabold tracking-[-1px] text-textc">NEWS<span className="text-brand">LUMA</span></span>
         </div>
+        <nav className="flex items-center gap-5 text-[13px] font-medium text-mutedc">
+          <Link href="/privacy" className="hover:text-brand transition">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-brand transition">Terms of Service</Link>
+          <Link href="/cookies" className="hover:text-brand transition">Cookie Policy</Link>
+        </nav>
         <p className="text-sm text-mutedc">© {new Date().getFullYear()} Newsluma. All rights reserved.</p>
       </div>
     </footer>

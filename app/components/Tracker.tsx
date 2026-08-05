@@ -23,6 +23,10 @@ export default function Tracker() {
   const first = useRef(true);
 
   useEffect(() => {
+    // GDPR: only track if the user accepted the cookie consent
+    let consent = "rejected";
+    try { consent = localStorage.getItem("tn_consent") || "rejected"; } catch {}
+    if (consent !== "accepted") return;
     const send = () => {
       const body = {
         path: pathname,

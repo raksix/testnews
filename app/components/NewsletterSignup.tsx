@@ -28,7 +28,7 @@ export default function NewsletterSignup() {
             <p className="text-emerald-400 font-semibold text-sm">✓ You're subscribed! Check your inbox.</p>
           </div>
         ) : (
-          <form onSubmit={submit} className="mt-6 flex gap-2">
+          <form onSubmit={submit} className="mt-6 flex flex-col sm:flex-row gap-2">
             <input
               type="email"
               value={email}
@@ -39,7 +39,7 @@ export default function NewsletterSignup() {
             />
             <button
               type="submit"
-              className="bg-brand hover:bg-brand text-white font-bold text-sm px-6 py-3 rounded-xl transition whitespace-nowrap"
+              className="bg-brand hover:bg-brand text-white font-bold text-sm px-6 py-3 rounded-xl transition whitespace-nowrap w-full sm:w-auto"
             >
               Subscribe
             </button>
