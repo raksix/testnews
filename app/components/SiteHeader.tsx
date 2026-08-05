@@ -28,16 +28,15 @@ export default function SiteHeader() {
 
   if (pathname.startsWith("/admin")) return null;
 
-  const isArticle = pathname.startsWith("/news/");
   const active = pathname === "/" ? "/" : pathname;
 
   return (
-    <header className={isArticle ? "absolute top-0 left-0 right-0 z-50" : "sticky top-0 z-50"}>
+    <header className="sticky top-0 z-50">
       {/* Main header */}
-      <div className={isArticle ? "border-b border-white/10" : "bg-surface border-b border-borderc"}>
+      <div className="bg-surface border-b border-borderc">
         <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-baseline shrink-0">
-            <span className={`text-[30px] font-extrabold tracking-[-1px] ${isArticle ? "text-white" : "text-textc"}`}>TEST</span>
+            <span className="text-[30px] font-extrabold tracking-[-1px] text-textc">TEST</span>
             <span className="text-[30px] font-extrabold tracking-[-1px] text-brand">NEWS</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-[22px]">
@@ -45,15 +44,7 @@ export default function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-[15px] font-semibold transition whitespace-nowrap ${
-                  active === item.href
-                    ? isArticle
-                      ? "text-white"
-                      : "text-brand"
-                    : isArticle
-                      ? "text-white/85 hover:text-white"
-                      : "text-textc hover:text-brand"
-                }`}
+                className={`text-[15px] font-semibold transition whitespace-nowrap ${active === item.href ? "text-brand" : "text-textc hover:text-brand"}`}
               >
                 {item.label}
               </Link>
@@ -72,10 +63,10 @@ export default function SiteHeader() {
           </div>
         </div>
         {/* Mobile nav */}
-        <nav className={`lg:hidden border-t overflow-x-auto scrollbar-hide ${isArticle ? "border-white/10" : "border-borderc"}`}>
+        <nav className="lg:hidden border-t border-borderc overflow-x-auto scrollbar-hide">
           <div className="flex gap-5 px-4 py-2.5">
             {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className={`whitespace-nowrap text-[13px] font-semibold ${active === item.href ? (isArticle ? "text-white" : "text-brand") : isArticle ? "text-white/70" : "text-mutedc"}`}>
+              <Link key={item.href} href={item.href} className={`whitespace-nowrap text-[13px] font-semibold ${active === item.href ? "text-brand" : "text-mutedc"}`}>
                 {item.label}
               </Link>
             ))}
@@ -84,7 +75,7 @@ export default function SiteHeader() {
       </div>
 
       {/* Breaking news bar */}
-      <div className={isArticle ? "hidden" : "bg-[#FFF4F4] border-b border-borderc"}>
+      <div className="bg-[#FFF4F4] border-b border-borderc">
         <div className="mx-auto max-w-[1320px] px-4 py-2.5 flex items-center gap-3.5 overflow-hidden">
           <span className="shrink-0 flex items-center gap-1.5 bg-brand text-white text-[12px] font-bold tracking-[0.5px] px-2.5 py-1 rounded">
             <svg viewBox="0 0 14 14" className="w-3.5 h-3.5">
