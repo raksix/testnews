@@ -25,7 +25,7 @@ export default function SiteHeader() {
       <div className="bg-surface border-b border-borderc">
         <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-baseline shrink-0">
-            <span className="text-[30px] font-extrabold tracking-[-1px] text-textc">LUMA</span>
+            <span className="text-[30px] font-extrabold tracking-[-1px] text-textc">NEWS</span>
             <span className="text-[30px] font-extrabold tracking-[-1px] text-brand">LUMA</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-[22px]">
