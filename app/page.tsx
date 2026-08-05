@@ -4,6 +4,7 @@ import EditorsPicks from "./components/EditorsPicks";
 import MostRead from "./components/MostRead";
 import TrendingTopics from "./components/TrendingTopics";
 import NewsletterSignup from "./components/NewsletterSignup";
+import DragScroll from "./components/DragScroll";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
       </div>
 
       {/* Yatay satır — foto üstte, başlık altta */}
-      <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide">
+      <DragScroll className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide">
         {items.slice(0, 5).map((item) => (
           <Link
             key={item.id || item.slug}
@@ -85,7 +86,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
             </div>
           </Link>
         ))}
-      </div>
+      </DragScroll>
     </section>
   );
 }
