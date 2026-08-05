@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center font-black text-white text-2xl mx-auto mb-4">T</div>
-          <h1 className="text-2xl font-black text-textc">TestNews Admin</h1>
+          <h1 className="text-2xl font-black text-textc">Newsluma Admin</h1>
           <p className="text-mutedc text-sm mt-1">Enter your admin key to continue</p>
         </div>
         <form onSubmit={login} className="space-y-4">

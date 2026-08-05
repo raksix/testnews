@@ -2,8 +2,8 @@ import { fetchNews } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-const SITE = "https://testnews.fermag.com.tr";
-const PUBLISHER = "TestNews";
+const SITE = "https://newsluma.com";
+const PUBLISHER = "Newsluma";
 const LANGUAGE = "en";
 
 function esc(s: string) {

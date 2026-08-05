@@ -95,7 +95,7 @@ export default function AdminDashboard({ apiKey }: { apiKey: string }) {
         <a href="/" target="_blank" className="group rounded-xl border border-borderc bg-surface2/40 p-6 hover:border-blue-500/30 transition">
           <div className="text-3xl mb-3">🌐</div>
           <h3 className="font-bold text-textc group-hover:text-blue-500 transition">View Live Site</h3>
-          <p className="text-sm text-mutedc mt-1">Open testnews.fermag.com.tr</p>
+          <p className="text-sm text-mutedc mt-1">Open newsluma.com</p>
         </a>
       </div>
 

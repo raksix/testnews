@@ -62,7 +62,7 @@ export default function SettingsPage({ apiKey }: { apiKey: string }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black text-textc">Settings</h1>
-          <p className="text-mutedc text-sm mt-1">Configure your TestNews platform</p>
+          <p className="text-mutedc text-sm mt-1">Configure your Newsluma platform</p>
         </div>
         <button onClick={save} className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-lg transition">Save Settings</button>
       </div>

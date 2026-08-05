@@ -254,7 +254,7 @@ export async function runRedditFetch(): Promise<FetchResult> {
             content: rewritten.content,
             category: rewritten.category,
             image: imageUrl,
-            author: `TestNews Desk`,
+            author: `Newsluma Desk`,
             featured: false,
             publishedAt: new Date().toISOString(),
           });

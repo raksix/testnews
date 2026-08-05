@@ -3,7 +3,7 @@ import { CATEGORIES } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
-const SITE = "https://testnews.fermag.com.tr";
+const SITE = "https://newsluma.com";
 
 export default async function sitemap() {
   const { news } = await fetchNews({ limit: 1000 });

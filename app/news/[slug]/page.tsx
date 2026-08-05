@@ -4,7 +4,7 @@ import { fetchNewsBySlug, fetchNews, type NewsItem } from "@/lib/api";
 import Comments from "@/app/components/Comments";
 import InfiniteFeed from "@/app/components/InfiniteFeed";
 import ShareButtons from "@/app/components/ShareButtons";
-const SITE = "https://testnews.fermag.com.tr";
+const SITE = "https://newsluma.com";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: news.title,
       description: news.excerpt,
       url,
-      siteName: "TestNews",
+      siteName: "Newsluma",
       locale: "en_US",
       type: "article",
       publishedTime: news.publishedAt,
@@ -96,7 +96,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
     author: { "@type": "Person", name: news.author },
     publisher: {
       "@type": "Organization",
-      name: "TestNews",
+      name: "Newsluma",
       logo: { "@type": "ImageObject", url: `${SITE}/icon.png` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE}/news/${news.slug}` },

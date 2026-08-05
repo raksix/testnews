@@ -25,8 +25,8 @@ export default function SiteHeader() {
       <div className="bg-surface border-b border-borderc">
         <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-baseline shrink-0">
-            <span className="text-[30px] font-extrabold tracking-[-1px] text-textc">TEST</span>
-            <span className="text-[30px] font-extrabold tracking-[-1px] text-brand">NEWS</span>
+            <span className="text-[30px] font-extrabold tracking-[-1px] text-textc">LUMA</span>
+            <span className="text-[30px] font-extrabold tracking-[-1px] text-brand">LUMA</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-[22px]">
             {NAV.map((item) => (
@@ -75,9 +75,9 @@ export function SiteFooter() {
     <footer className="border-t border-borderc mt-16">
       <div className="mx-auto max-w-[1320px] px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-[22px] font-extrabold tracking-[-1px] text-textc">TEST<span className="text-brand">NEWS</span></span>
+          <span className="text-[22px] font-extrabold tracking-[-1px] text-textc">TEST<span className="text-brand">LUMA</span></span>
         </div>
-        <p className="text-sm text-mutedc">© {new Date().getFullYear()} TestNews. All rights reserved.</p>
+        <p className="text-sm text-mutedc">© {new Date().getFullYear()} Newsluma. All rights reserved.</p>
       </div>
     </footer>
   );

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://testnews.fermag.com.tr/sitemap.xml",
-    host: "https://testnews.fermag.com.tr",
+    sitemap: "https://newsluma.com/sitemap.xml",
+    host: "https://newsluma.com",
   };
 }

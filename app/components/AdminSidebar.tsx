@@ -23,7 +23,7 @@ export default function AdminSidebar({ apiKey, mobileOpen, onClose }: { apiKey: 
         {!collapsed && (
           <Link href="/admin" className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-white text-sm">T</span>
-            <span className="font-black text-textc text-sm">TestNews</span>
+            <span className="font-black text-textc text-sm">Newsluma</span>
           </Link>
         )}
         <div className="flex items-center gap-1">

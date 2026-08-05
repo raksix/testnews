@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchNews, type NewsItem } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
-const SITE = "https://testnews.fermag.com.tr";
+const SITE = "https://newsluma.com";
 import CategorySlider from "../../components/CategorySlider";
 export const dynamic = "force-dynamic";
 function formatDate(iso: string) {
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
       title: `${name} News`,
       description: `Latest ${name} news and headlines from around the globe.`,
       url: `${SITE}/category/${category}`,
-      siteName: "TestNews",
+      siteName: "Newsluma",
       locale: "en_US",
       type: "website",
       images: [{ url: `${SITE}/icon.png`, width: 512, height: 512 }],

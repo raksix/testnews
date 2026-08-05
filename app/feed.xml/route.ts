@@ -2,9 +2,9 @@ import { fetchNews } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-const SITE = "https://testnews.fermag.com.tr";
-const TITLE = "TestNews — Breaking News & Global Headlines";
-const DESCRIPTION = "TestNews delivers breaking news, world headlines, technology, business, sports and science coverage — updated around the clock.";
+const SITE = "https://newsluma.com";
+const TITLE = "Newsluma — Breaking News & Global Headlines";
+const DESCRIPTION = "Newsluma delivers breaking news, world headlines, technology, business, sports and science coverage — updated around the clock.";
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
