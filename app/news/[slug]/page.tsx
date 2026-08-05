@@ -63,13 +63,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: news.publishedAt,
       authors: [news.author],
       section: news.category,
-      images: news.image ? [{ url: news.image, width: 1200, height: 630, alt: news.title }] : [],
+      images: [{ url: `${SITE}/api/og-image/${news.slug}`, width: 1200, height: 630, alt: news.title }],
     },
     twitter: {
       card: "summary_large_image",
       title: news.title,
       description: news.excerpt,
-      images: news.image ? [news.image] : [],
+      images: [`${SITE}/api/og-image/${news.slug}`],
     },
   };
 }

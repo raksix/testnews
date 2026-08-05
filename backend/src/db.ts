@@ -242,20 +242,38 @@ export interface Comment {
   _id?: ObjectId;
   id?: string;
   newsSlug: string;
+  parentId?: string;
   name: string;
   content: string;
   createdAt: string;
+  likes?: number;
 }
 
-export async function listComments(newsSlug: string): Promise<Comment[]> {
+export interface CommentWithReplies extends Comment {
+  replies?: Comment[];
+}
+
+export async function listComments(newsSlug: string): Promise<CommentWithReplies[]> {
   const db = await getDb();
   const items = await db
     .collection<Comment>("comments")
     .find({ newsSlug })
     .sort({ createdAt: -1 })
-    .limit(100)
+    .limit(200)
     .toArray();
-  return items.map((c) => ({ ...c, id: c._id?.toString() }));
+  const parents = items.filter((c) => !c.parentId);
+  const parentIds = parents.map((c) => c._id?.toString());
+  const replies = items.filter(
+    (c) => c.parentId && parentIds.includes(c.parentId)
+  );
+  return parents.map((c) => ({
+    ...c,
+    id: c._id?.toString(),
+    replies: replies
+      .filter((r) => r.parentId === c._id?.toString())
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map((r) => ({ ...r, id: r._id?.toString() })),
+  }));
 }
 
 export async function createComment(
@@ -265,10 +283,20 @@ export async function createComment(
   const doc: Comment = {
     ...data,
     name: data.name?.trim() ? data.name.trim() : "Anonymous",
+    likes: 0,
     createdAt: new Date().toISOString(),
   };
   const result = await db.collection<Comment>("comments").insertOne(doc as any);
   return { ...doc, id: result.insertedId.toString() };
+}
+
+export async function incrementCommentLikes(id: string): Promise<number | null> {
+  const db = await getDb();
+  if (!ObjectId.isValid(id)) return null;
+  const result = await db
+    .collection<Comment>("comments")
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $inc: { likes: 1 } }, { returnDocument: "after" });
+  return result ? (result.likes ?? 0) : null;
 }
 
 const COMMENT_NAMES = [
@@ -321,6 +349,29 @@ const STOPWORDS = new Set([
   "new","first","last","more","most","than","so","if","can","will","would","could",
   "has","have","had","do","does","did","who","what","when","where","why","how",
 ]);
+
+const REPLY_POOL = [
+  "Actually, I disagree. The data tells a different story.",
+  "That's a fair point, but you're missing the bigger picture.",
+  "Exactly what I've been saying all along.",
+  "No way. Have you even read the full report?",
+  "I see it differently — the sources here are solid.",
+  "You clearly haven't looked at the details.",
+  "That take is way off, honestly.",
+  "Calm down, it's not that simple.",
+  "I respect your opinion, but the facts say otherwise.",
+  "Finally someone with sense in this thread.",
+  "You're right about that, but the second part is wrong.",
+  "This is exactly the kind of comment that derails the discussion.",
+  "Prove it. Show me where that's stated in the article.",
+  "We get it, you have an opinion. So does everyone else.",
+  "Saying 'fake news' isn't an argument, you know.",
+  "I checked the original source — your claim doesn't hold up.",
+  "Genuine question: what would change your mind on this?",
+  "Disagree respectfully, but I think you're underestimating this.",
+  "100% agreed. Well put.",
+  "Not sure I'd go that far, but interesting perspective.",
+];
 
 const CATEGORY_COMMENTS: Record<string, string[]> = {
   Technology: [
@@ -411,5 +462,37 @@ export async function seedCommentsForNews(
       createdAt: new Date(now - Math.floor(Math.random() * 48 * 60 * 60 * 1000)).toISOString(),
     });
   }
-  if (docs.length) await db.collection<Comment>("comments").insertMany(docs as any);
+  let parentIds: string[] = [];
+  if (docs.length) {
+    const inserted = await db.collection<Comment>("comments").insertMany(docs as any);
+    parentIds = Object.values(inserted.insertedIds).map((id) => id.toString());
+  }
+
+  // AI replies: ~40% of comments get 1-2 replies (agree/disagree/argue),
+  // timestamped shortly after the parent comment
+  const repliers = docs.filter(() => Math.random() < 0.4);
+  const replyDocs: Comment[] = [];
+  for (const parent of repliers) {
+    const parentId = parentIds[docs.indexOf(parent)];
+    if (!parentId) continue;
+    const replyCount = 1 + Math.floor(Math.random() * 2); // 1-2 replies
+    const usedReplyNames = new Set<string>();
+    for (let r = 0; r < replyCount; r++) {
+      let name = COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)];
+      if (usedReplyNames.has(name)) name = name + " " + Math.floor(Math.random() * 99);
+      usedReplyNames.add(name);
+      replyDocs.push({
+        newsSlug,
+        parentId,
+        name,
+        content: REPLY_POOL[Math.floor(Math.random() * REPLY_POOL.length)],
+        likes: Math.floor(Math.random() * 12),
+        createdAt: new Date(
+          new Date(parent.createdAt).getTime() +
+            (5 + Math.floor(Math.random() * 115)) * 60 * 1000
+        ).toISOString(),
+      });
+    }
+  }
+  if (replyDocs.length) await db.collection<Comment>("comments").insertMany(replyDocs as any);
 }

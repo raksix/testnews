@@ -11,6 +11,7 @@ import {
   deleteNews,
   listComments,
   createComment,
+  incrementCommentLikes,
   getSettings,
   updateSettings,
   getDb,
@@ -111,6 +112,50 @@ app.post<{ Params: { slug: string } }>(
   }
 );
 
+// OG image proxy: serve the article image from a real URL (data URIs
+// don't work in og:image for Discord/Telegram/WhatsApp previews)
+app.get<{ Params: { slug: string } }>(
+  "/api/og-image/:slug",
+  async (req, reply) => {
+    const news = await getNewsBySlug(req.params.slug);
+    if (!news || !news.image) return reply.code(404).send();
+    const img = news.image;
+    if (img.startsWith("data:")) {
+      const m = img.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/);
+      if (!m) return reply.code(404).send();
+      reply.header("Content-Type", m[1]);
+      reply.header("Cache-Control", "public, max-age=86400");
+      return reply.send(Buffer.from(m[2], "base64"));
+    }
+    return reply.redirect(img);
+  }
+);
+// Reply to a comment
+app.post<{ Params: { slug: string; id: string } }>(
+  "/api/news/:slug/comments/:id/reply",
+  async (req, reply) => {
+    const body = (req.body || {}) as { name?: string; content?: string };
+    if (!body.content?.trim()) {
+      return reply.code(400).send({ error: "Content is required" });
+    }
+    const comment = await createComment({
+      newsSlug: req.params.slug,
+      parentId: req.params.id,
+      name: body.name || "Anonymous",
+      content: body.content.trim(),
+    });
+    return reply.code(201).send({ comment });
+  }
+);
+// Like a comment
+app.post<{ Params: { slug: string; id: string } }>(
+  "/api/news/:slug/comments/:id/like",
+  async (req, reply) => {
+    const likes = await incrementCommentLikes(req.params.id);
+    if (likes === null) return reply.code(404).send({ error: "Comment not found" });
+    return { likes };
+  }
+);
 // Delete comment (admin)
 app.delete<{ Params: { id: string } }>(
   "/api/admin/comments/:id",
