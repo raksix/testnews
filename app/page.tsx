@@ -19,7 +19,7 @@ function HeroCard({ item }: { item: NewsItem }) {
   return (
     <Link href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[520px] h-full">
       {item.image ? (
-        <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+        <img src={item.image} alt={item.title} fetchPriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-brand/30 to-surface2" />
       )}

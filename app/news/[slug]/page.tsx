@@ -108,7 +108,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
       {/* Full-width hero image */}
       {news.image && (
         <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
-          <img src={news.image} alt={news.title} className="w-full h-full object-cover" />
+          <img src={news.image} alt={news.title} fetchPriority="high" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0">
             <div className="max-w-[1320px] mx-auto px-4 pb-8">

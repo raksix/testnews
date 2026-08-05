@@ -51,9 +51,9 @@ app.get("/health", async () => ({ ok: true }));
 // Serve uploaded article images: /upload/<file>
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOAD_DIR = path.resolve(__dirname, "../upload");
-app.get<{ Params: { file: string } }>("/upload/:file", async (req, reply) => {
-  const file = req.params.file;
-  if (!/^[a-zA-Z0-9_-]+\.(jpe?g|png|webp|gif)$/.test(file)) {
+app.get("/upload/*", async (req, reply) => {
+  const file = (req.params as any)["*"] as string;
+  if (!/^[a-zA-Z0-9_/\-]+\.(jpe?g|png|webp|gif)$/.test(file)) {
     return reply.code(400).send({ error: "Bad filename" });
   }
   try {
@@ -61,7 +61,7 @@ app.get<{ Params: { file: string } }>("/upload/:file", async (req, reply) => {
     const ext = file.split(".").pop()?.toLowerCase();
     const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : ext === "gif" ? "image/gif" : "image/jpeg";
     reply.header("Content-Type", mime);
-    reply.header("Cache-Control", "public, max-age=86400");
+    reply.header("Cache-Control", "public, max-age=2592000");
     return reply.send(buf);
   } catch {
     return reply.code(404).send({ error: "Not found" });
@@ -159,7 +159,7 @@ app.get<{ Params: { slug: string } }>(
       const m = img.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/);
       if (!m) return reply.code(404).send();
       reply.header("Content-Type", m[1]);
-      reply.header("Cache-Control", "public, max-age=86400");
+      reply.header("Cache-Control", "public, max-age=2592000");
       return reply.send(Buffer.from(m[2], "base64"));
     }
     return reply.redirect(img);
