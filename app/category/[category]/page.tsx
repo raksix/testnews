@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchNews, type NewsItem } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
+const SITE = "https://testnews.fermag.com.tr";
 import CategorySlider from "../../components/CategorySlider";
 export const dynamic = "force-dynamic";
 function formatDate(iso: string) {
@@ -12,7 +13,25 @@ const VALID = CATEGORIES.map((c) => c.toLowerCase());
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params;
   const name = CATEGORIES.find((c) => c.toLowerCase() === category) || category;
-  return { title: `${name} News`, description: `Latest ${name} news and headlines from around the globe.` };
+  return {
+    title: `${name} News`,
+    description: `Latest ${name} news and headlines from around the globe.`,
+    alternates: { canonical: `${SITE}/category/${category}` },
+    openGraph: {
+      title: `${name} News`,
+      description: `Latest ${name} news and headlines from around the globe.`,
+      url: `${SITE}/category/${category}`,
+      siteName: "TestNews",
+      locale: "en_US",
+      type: "website",
+      images: [{ url: `${SITE}/icon.png`, width: 512, height: 512 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} News`,
+      description: `Latest ${name} news and headlines from around the globe.`,
+    },
+  };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 const SITE = "https://testnews.fermag.com.tr";
 
 export default async function sitemap() {
-  const { news } = await fetchNews({ limit: 200 });
+  const { news } = await fetchNews({ limit: 1000 });
   const url = (path: string) => ({ url: `${SITE}${path}`, lastModified: new Date() });
 
   const staticUrls = [url("/"), url("/search")].concat(
