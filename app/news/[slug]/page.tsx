@@ -106,9 +106,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   return (
     <div className="bg-surface min-h-screen">
       {/* Full-width hero image */}
-      {news.image && (
+      {news.image ? (
         <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
           <img src={news.image} alt={news.title} className="w-full h-full object-cover" />
+          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0">
             <div className="max-w-[1320px] mx-auto px-4 pb-8">
@@ -120,6 +121,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
             </div>
           </div>
         </div>
+      ) : (
+        <div className="pt-[100px] md:pt-16" />
       )}
 
       <div className="max-w-[1320px] mx-auto px-4">
