@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchNewsBySlug, fetchNews, type NewsItem } from "@/lib/api";
+import { fetchNewsBySlug, fetchNews, imgUrl, type NewsItem } from "@/lib/api";
 import Comments from "@/app/components/Comments";
 import InfiniteFeed from "@/app/components/InfiniteFeed";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -108,7 +108,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
       {/* Full-width hero image */}
       {news.image && (
         <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
-          <img src={news.image} alt={news.title} fetchPriority="high" className="w-full h-full object-cover" />
+          <img src={imgUrl(news.image)} alt={news.title} fetchPriority="high" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0">
             <div className="max-w-[1320px] mx-auto px-4 pb-8">
@@ -194,7 +194,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
                 <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group block rounded-xl overflow-hidden border border-borderc hover:border-zinc-600 bg-surface2/40 transition">
                   {item.image && (
                     <div className="h-40 overflow-hidden">
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                      <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     </div>
                   )}
                   <div className="p-4">

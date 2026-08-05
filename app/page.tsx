@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchNews, type NewsItem } from "@/lib/api";
+import { fetchNews, imgUrl, type NewsItem } from "@/lib/api";
 import EditorsPicks from "./components/EditorsPicks";
 import MostRead from "./components/MostRead";
 import TrendingTopics from "./components/TrendingTopics";
@@ -19,7 +19,7 @@ function HeroCard({ item }: { item: NewsItem }) {
   return (
     <Link href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[520px] h-full">
       {item.image ? (
-        <img src={item.image} alt={item.title} fetchPriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+        <img src={imgUrl(item.image)} alt={item.title} fetchPriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-brand/30 to-surface2" />
       )}
@@ -72,7 +72,7 @@ function CategorySection({ category, items }: { category: string; items: NewsIte
           >
             <div className="w-full h-[180px] rounded-[8px] overflow-hidden bg-surface2">
               {item.image ? (
-                <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-brand/15 to-surface2 flex items-center justify-center">
                   <span className="text-3xl font-black text-brand/50">{item.category.charAt(0)}</span>
@@ -129,7 +129,7 @@ export default async function HomePage() {
               <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-4 items-center">
                 {item.image ? (
                   <div className="w-[130px] h-[90px] rounded-lg overflow-hidden shrink-0">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   </div>
                 ) : (
                   <div className="w-[130px] h-[90px] rounded-lg bg-surface2 shrink-0" />

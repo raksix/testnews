@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { API_URL, type NewsItem } from "@/lib/api";
+import { API_URL, imgUrl, type NewsItem } from "@/lib/api";
 import Comments from "./Comments";
 
 function formatDate(iso: string) {
@@ -35,7 +35,7 @@ function ArticleBlock({ item }: { item: NewsItem }) {
       {/* Hero image */}
       {item.image && (
         <div className="relative h-[45vh] md:h-[60vh] overflow-hidden rounded-2xl border border-borderc">
-          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+          <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent" />
         </div>
       )}

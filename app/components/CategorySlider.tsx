@@ -39,7 +39,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
             className={`absolute inset-0 block transition-opacity duration-700 ${i === index ? "opacity-100 z-10" : "opacity-0 z-0"}`}
           >
             {item.image ? (
-              <img src={item.image} alt={item.title} fetchPriority="high" className="w-full h-full object-cover" />
+              <img src={imgUrl(item.image)} alt={item.title} fetchPriority="high" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-brand/20 to-surface2" />
             )}

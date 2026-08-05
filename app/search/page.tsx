@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchNews, type NewsItem } from "@/lib/api";
+import { fetchNews, imgUrl, type NewsItem } from "@/lib/api";
 export const dynamic = "force-dynamic";
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -62,7 +62,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="flex items-start gap-4 py-5 group">
               {item.image && (
                 <div className="w-[140px] h-[90px] rounded-lg overflow-hidden shrink-0 hidden sm:block">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                 </div>
               )}
               <div className="min-w-0">

@@ -35,3 +35,13 @@ export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
   const data = await res.json();
   return data.news || null;
 }
+
+// Bump this when image files change to bust stale browser/CF caches
+export const IMG_VERSION = "v2";
+export function imgUrl(src?: string | null): string | undefined {
+  if (!src) return undefined;
+  if (src.startsWith("/upload/")) {
+    return `${src}${src.includes("?") ? "&" : "?"}${IMG_VERSION}`;
+  }
+  return src;
+}

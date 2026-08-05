@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchNews, type NewsItem } from "@/lib/api";
+import { fetchNews, imgUrl, type NewsItem } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
 const SITE = "https://newsluma.com";
 import CategorySlider from "../../components/CategorySlider";
@@ -59,7 +59,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         {rest.slice(4, 6).map((item: NewsItem) => (
           <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[320px] border border-borderc">
             {item.image ? (
-              <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+              <img src={imgUrl(item.image)} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-surface2" />
             )}
@@ -82,7 +82,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             <div className="relative">
               {item.image ? (
                 <div className="h-44 overflow-hidden">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                 </div>
               ) : (
                 <div className="h-44 bg-gradient-to-br from-borderc to-surface2 flex items-center justify-center">

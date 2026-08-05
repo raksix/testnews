@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_URL, type NewsItem } from "@/lib/api";
+import { API_URL, imgUrl, type NewsItem } from "@/lib/api";
 import Link from "next/link";
 
 export default function EditorsPicks() {
@@ -36,7 +36,7 @@ export default function EditorsPicks() {
             className="group relative block rounded-xl overflow-hidden min-h-[180px] bg-gradient-to-br from-surface2 to-borderc"
           >
             {item.image && (
-              <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition duration-500" />
+              <img src={imgUrl(item.image)} alt={item.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition duration-500" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
             <div className="absolute bottom-0 p-4">
