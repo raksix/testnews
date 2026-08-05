@@ -17,7 +17,7 @@ const CATEGORY_SECTIONS = ["World", "Technology", "Business", "Sports", "Science
 
 function HeroCard({ item }: { item: NewsItem }) {
   return (
-    <Link href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[520px]">
+    <Link href={`/news/${item.slug}`} className="group relative block rounded-lg overflow-hidden min-h-[280px] md:min-h-[520px] h-full">
       {item.image ? (
         <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
       ) : (
@@ -124,7 +124,7 @@ export default async function HomePage() {
             <HeroCard item={hero} />
           </div>
           {/* İkincil Manşetler — fotoğraflı kartlar */}
-          <div className="hidden lg:flex flex-col gap-5">
+          <div className="hidden lg:flex flex-col justify-between gap-5">
             {secondary.map((item) => (
               <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group flex gap-4 items-center">
                 {item.image ? (
