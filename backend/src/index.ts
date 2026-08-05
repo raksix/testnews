@@ -18,7 +18,7 @@ import {
   slugify,
 } from "./db.js";
 import { runRedditFetch } from "./redditBot.js";
-import { addGradualComments } from "./db.js";
+import { addGradualComments, trackVisit, getAnalytics } from "./db.js";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -164,6 +164,31 @@ app.get<{ Params: { slug: string } }>(
     return reply.redirect(img);
   }
 );
+// Track a page view (public)
+app.post<{ Body: { path?: string; referrer?: string; sessionId?: string } }>(
+  "/api/track",
+  async (req) => {
+    const body = req.body || {};
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.socket.remoteAddress || "";
+    trackVisit({
+      path: String(body.path || "/").slice(0, 300),
+      referrer: String(body.referrer || "").slice(0, 500),
+      sessionId: String(body.sessionId || "").slice(0, 100),
+      ip,
+      ua: String(req.headers["user-agent"] || "").slice(0, 300),
+    }).catch(() => {});
+    return { ok: true };
+  }
+);
+// Analytics (admin)
+app.get("/api/admin/analytics", async (req, reply) => {
+  const headers = req.headers as Record<string, string | undefined>;
+  if (headers["x-admin-key"] !== ADMIN_KEY) {
+    return reply.code(401).send({ error: "Unauthorized" });
+  }
+  return await getAnalytics();
+});
 // Reply to a comment
 app.post<{ Params: { slug: string; id: string } }>(
   "/api/news/:slug/comments/:id/reply",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SiteHeader, { SiteFooter } from "./components/SiteHeader";
 import RouteProgress from "./components/RouteProgress";
+import Tracker from "./components/Tracker";
 export const metadata: Metadata = {
   metadataBase: new URL("https://testnews.fermag.com.tr"),
   title: {
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body className="bg-surface text-textc antialiased min-h-screen flex flex-col transition-colors">
         <RouteProgress />
+        <Tracker />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

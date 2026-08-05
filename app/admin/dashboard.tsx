@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import AdminAnalytics from "./AdminAnalytics";
 
 interface Stats {
   total: number;
@@ -97,6 +98,9 @@ export default function AdminDashboard({ apiKey }: { apiKey: string }) {
           <p className="text-sm text-mutedc mt-1">Open testnews.fermag.com.tr</p>
         </a>
       </div>
+
+      {/* Detaylı istatistikler */}
+      <AdminAnalytics apiKey={apiKey} />
     </div>
   );
 }

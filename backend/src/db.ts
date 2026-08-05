@@ -577,3 +577,148 @@ export async function addGradualComments(): Promise<number> {
   }
   return added;
 }
+
+// ---------- Analytics ----------
+
+export interface Visit {
+  path: string;
+  referrer?: string;
+  sessionId?: string;
+  ip?: string;
+  country?: string;
+  device?: string;
+  browser?: string;
+  os?: string;
+  createdAt: string;
+}
+
+function parseUA(ua: string) {
+  let device = "Desktop";
+  if (/iPad|Tablet/i.test(ua)) device = "Tablet";
+  else if (/Mobile|Android|iPhone/i.test(ua)) device = "Mobile";
+  let browser = "Other";
+  if (/Edg\//i.test(ua)) browser = "Edge";
+  else if (/OPR\/|Opera/i.test(ua)) browser = "Opera";
+  else if (/Chrome\//i.test(ua)) browser = "Chrome";
+  else if (/Firefox\//i.test(ua)) browser = "Firefox";
+  else if (/Safari\//i.test(ua)) browser = "Safari";
+  let os = "Other";
+  if (/Windows/i.test(ua)) os = "Windows";
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = "macOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/iPhone|iPad|iOS/i.test(ua)) os = "iOS";
+  else if (/Linux/i.test(ua)) os = "Linux";
+  return { device, browser, os };
+}
+
+export async function trackVisit(data: {
+  path: string;
+  referrer?: string;
+  sessionId?: string;
+  ip?: string;
+  ua?: string;
+}): Promise<void> {
+  const db = await getDb();
+  let country: string | undefined;
+  if (data.ip) {
+    try {
+      const geo = (await import("geoip-lite")).default.lookup(data.ip);
+      country = geo?.country;
+    } catch {}
+  }
+  const { device, browser, os } = parseUA(data.ua || "");
+  await db.collection<Visit>("visits").insertOne({
+    path: data.path || "/",
+    referrer: data.referrer || "",
+    sessionId: data.sessionId || "",
+    ip: data.ip || "",
+    country,
+    device,
+    browser,
+    os,
+    createdAt: new Date().toISOString(),
+  } as any);
+}
+
+export async function getAnalytics() {
+  const db = await getDb();
+  const col = db.collection<Visit>("visits");
+  const now = Date.now();
+  const fiveMinAgo = new Date(now - 5 * 60 * 1000).toISOString();
+  const todayStart = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+
+  const [
+    total,
+    today,
+    online,
+    uniqueVisitors,
+    daily,
+    topPages,
+    referrers,
+    devices,
+    browsers,
+    countries,
+    recent,
+  ] = await Promise.all([
+    col.countDocuments(),
+    col.countDocuments({ createdAt: { $gte: todayStart } }),
+    col.distinct("sessionId", { createdAt: { $gte: fiveMinAgo }, sessionId: { $ne: "" } }),
+    col.distinct("sessionId", { sessionId: { $ne: "" } }),
+    col
+      .aggregate([
+        { $match: { createdAt: { $gte: new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString() } } },
+        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: { $dateFromString: { dateString: "$createdAt" } } } }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ])
+      .toArray(),
+    col.aggregate([{ $group: { _id: "$path", count: { $sum: 1 } } }, { $sort: { count: -1 } }, { $limit: 10 }]).toArray(),
+    col.aggregate([
+      { $project: { ref: { $ifNull: ["$referrer", ""] } } },
+      { $group: { _id: "$ref", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]).toArray(),
+    col.aggregate([{ $group: { _id: "$device", count: { $sum: 1 } } }, { $sort: { count: -1 } }]).toArray(),
+    col.aggregate([{ $group: { _id: "$browser", count: { $sum: 1 } } }, { $sort: { count: -1 } }]).toArray(),
+    col.aggregate([
+      { $match: { country: { $ne: null } } },
+      { $group: { _id: "$country", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]).toArray(),
+    col.find({}, { projection: { path: 1, country: 1, device: 1, browser: 1, createdAt: 1, referrer: 1 } }).sort({ createdAt: -1 }).limit(15).toArray(),
+  ]);
+
+  const refName = (ref: string) => {
+    if (!ref) return "Direct";
+    try {
+      return new URL(ref).hostname.replace(/^www\./, "");
+    } catch {
+      return "Direct";
+    }
+  };
+
+  return {
+    total,
+    today,
+    online: online.length,
+    uniqueVisitors: uniqueVisitors.length,
+    daily: daily.map((d: any) => ({ date: d._id, count: d.count })),
+    topPages: topPages.map((p: any) => ({ path: p._id, count: p.count })),
+    referrers: referrers
+      .map((r: any) => ({ name: refName(r._id), count: r.count }))
+      .filter((r: any) => r.name !== "Direct" || r.count > 0)
+      .sort((a: any, b: any) => b.count - a.count),
+    devices: devices.map((d: any) => ({ name: d._id, count: d.count })),
+    browsers: browsers.map((b: any) => ({ name: b._id, count: b.count })),
+    countries: countries.map((c: any) => ({ name: c._id, count: c.count })),
+    recent: recent.map((r: any) => ({
+      path: r.path,
+      country: r.country || "—",
+      device: r.device || "—",
+      browser: r.browser || "—",
+      referrer: r.referrer ? refName(r.referrer) : "Direct",
+      createdAt: r.createdAt,
+    })),
+  };
+}
