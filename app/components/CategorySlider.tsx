@@ -30,7 +30,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
       onMouseLeave={() => setPaused(false)}
     >
       {/* Slaytlar */}
-      <div className="relative min-h-[340px] md:min-h-[480px]">
+      <div className="group relative min-h-[340px] md:min-h-[480px]">
         {items.map((item, i) => (
           <Link
             key={item.id || item.slug}
@@ -60,7 +60,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
       <button
         onClick={prev}
         aria-label="Previous slide"
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-brand text-white flex items-center justify-center transition"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-brand text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
           <path d="m15 18-6-6 6-6" />
@@ -69,7 +69,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
       <button
         onClick={next}
         aria-label="Next slide"
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-brand text-white flex items-center justify-center transition"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-brand text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
           <path d="m9 18 6-6-6-6" />
@@ -77,7 +77,7 @@ export default function CategorySlider({ items }: { items: NewsItem[] }) {
       </button>
 
       {/* Noktalar */}
-      <div className="absolute bottom-4 right-4 z-20 flex gap-1.5">
+      <div className="absolute bottom-4 right-4 z-20 flex gap-1.5 transition-opacity opacity-0 group-hover:opacity-100">
         {items.map((_, i) => (
           <button
             key={i}
