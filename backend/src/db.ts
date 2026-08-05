@@ -1,4 +1,21 @@
 import { MongoClient, ObjectId, type Db } from "mongodb";
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOAD_DIR = path.resolve(__dirname, "../upload");
+
+// Convert a base64 data-URI image into a real file under upload/,
+// returns the public path (/upload/xxx.jpg). Non-data-URI inputs pass through.
+export async function saveImageToFile(dataUri: string, slug: string): Promise<string> {
+  const m = dataUri.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/);
+  if (!m) return dataUri;
+  const ext = m[1].split("/")[1] === "jpeg" ? "jpg" : m[1].split("/")[1];
+  const filename = `${slug.replace(/[^a-z0-9_-]/gi, "").slice(0, 70)}.${ext}`;
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  await fs.writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(m[2], "base64"));
+  return `/upload/${filename}`;
+}
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
@@ -114,12 +131,15 @@ export async function createNews(
   const db = await getDb();
   const doc: NewsItem = {
     ...data,
+    image: data.image?.startsWith("data:")
+      ? await saveImageToFile(data.image, data.slug || `post-${Date.now()}`)
+      : data.image,
     featured: Boolean(data.featured),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
   const result = await db.collection<NewsItem>("news").insertOne(doc as any);
-  seedCommentsForNews(doc.slug, doc.title, doc.category).catch(() => {});
+  seedCommentsForNews(doc.slug, doc.title, doc.category, doc.publishedAt).catch(() => {});
   return serialize({ ...doc, _id: result.insertedId });
 }
 
@@ -423,13 +443,15 @@ function topicFromTitle(title: string): string {
 export async function seedCommentsForNews(
   newsSlug: string,
   title?: string,
-  category?: string
+  category?: string,
+  publishedAt?: string
 ): Promise<void> {
   const db = await getDb();
   const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
   if (existing > 0) return;
   const count = 8 + Math.floor(Math.random() * 13); // 8-20
-  const now = Date.now();
+  const base = publishedAt ? new Date(publishedAt).getTime() : Date.now() - 48 * 60 * 60 * 1000;
+  const now = Math.min(Date.now(), base + 48 * 60 * 60 * 1000);
   const docs: Comment[] = [];
   const usedNames = new Set<string>();
 
@@ -459,7 +481,7 @@ export async function seedCommentsForNews(
       newsSlug,
       name,
       content: pool[Math.floor(Math.random() * pool.length)],
-      createdAt: new Date(now - Math.floor(Math.random() * 48 * 60 * 60 * 1000)).toISOString(),
+      createdAt: new Date(base + Math.floor(Math.random() * Math.max(1, now - base))).toISOString(),
     });
   }
   let parentIds: string[] = [];
@@ -488,11 +510,70 @@ export async function seedCommentsForNews(
         content: REPLY_POOL[Math.floor(Math.random() * REPLY_POOL.length)],
         likes: Math.floor(Math.random() * 12),
         createdAt: new Date(
-          new Date(parent.createdAt).getTime() +
-            (5 + Math.floor(Math.random() * 115)) * 60 * 1000
+          Math.min(
+            Date.now(),
+            new Date(parent.createdAt).getTime() +
+              (5 + Math.floor(Math.random() * 115)) * 60 * 1000
+          )
         ).toISOString(),
       });
     }
   }
   if (replyDocs.length) await db.collection<Comment>("comments").insertMany(replyDocs as any);
+}
+
+// Called periodically: recent posts (last 48h) slowly accumulate new
+// comments + replies so discussion grows naturally over time.
+export async function addGradualComments(): Promise<number> {
+  const db = await getDb();
+  const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const recent = await db
+    .collection<NewsItem>("news")
+    .find({ publishedAt: { $gte: since } }, { projection: { slug: 1, title: 1, category: 1, publishedAt: 1 } })
+    .limit(30)
+    .toArray();
+  if (recent.length === 0) return 0;
+  const targets = recent.filter(() => Math.random() < 0.4).slice(0, 3);
+  let added = 0;
+  for (const n of targets) {
+    const newsSlug = n.slug;
+    const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
+    if (existing > 60) continue;
+    const parentCount = 1 + Math.floor(Math.random() * 2);
+    const docs: Comment[] = [];
+    for (let i = 0; i < parentCount; i++) {
+      docs.push({
+        newsSlug,
+        name: COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)],
+        content: COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)],
+        likes: Math.floor(Math.random() * 15),
+        createdAt: new Date(
+          Math.min(Date.now(), new Date(n.publishedAt).getTime() + Math.floor(Math.random() * 48 * 60 * 60 * 1000))
+        ).toISOString(),
+      });
+    }
+    if (docs.length) {
+      const inserted = await db.collection<Comment>("comments").insertMany(docs as any);
+      const ids = Object.values(inserted.insertedIds).map((id) => id.toString());
+      // 30% chance a new comment gets a reply
+      const replyDocs: Comment[] = [];
+      for (let i = 0; i < docs.length; i++) {
+        if (Math.random() < 0.3 && ids[i]) {
+          replyDocs.push({
+            newsSlug,
+            parentId: ids[i],
+            name: COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)],
+            content: REPLY_POOL[Math.floor(Math.random() * REPLY_POOL.length)],
+            likes: Math.floor(Math.random() * 8),
+            createdAt: new Date(
+              Math.min(Date.now(), new Date(docs[i].createdAt).getTime() + (5 + Math.floor(Math.random() * 60)) * 60 * 1000)
+            ).toISOString(),
+          });
+        }
+      }
+      if (replyDocs.length) await db.collection<Comment>("comments").insertMany(replyDocs as any);
+      added += docs.length + replyDocs.length;
+    }
+  }
+  return added;
 }

@@ -18,6 +18,10 @@ import {
   slugify,
 } from "./db.js";
 import { runRedditFetch } from "./redditBot.js";
+import { addGradualComments } from "./db.js";
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const PORT = Number(process.env.PORT || 3013);
 const ADMIN_KEY = process.env.ADMIN_KEY || "testnews-admin-2026";
@@ -30,8 +34,38 @@ await app.register(cors, {
   allowedHeaders: ["Content-Type", "x-admin-key"],
 });
 
+// Comments grow naturally: every 20min recent posts get a few new
+// comments/replies (only if comments are empty, seed handles brand-new posts)
+setInterval(async () => {
+  try {
+    const added = await addGradualComments();
+    if (added > 0) app.log.info(`gradual comments: +${added}`);
+  } catch (e) {
+    app.log.warn(`gradual comments failed: ${(e as Error).message}`);
+  }
+}, 20 * 60 * 1000);
+
 // Health
 app.get("/health", async () => ({ ok: true }));
+// Serve uploaded article images: /upload/<file>
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOAD_DIR = path.resolve(__dirname, "../upload");
+app.get<{ Params: { file: string } }>("/upload/:file", async (req, reply) => {
+  const file = req.params.file;
+  if (!/^[a-zA-Z0-9_-]+\.(jpe?g|png|webp|gif)$/.test(file)) {
+    return reply.code(400).send({ error: "Bad filename" });
+  }
+  try {
+    const buf = await fs.readFile(path.join(UPLOAD_DIR, file));
+    const ext = file.split(".").pop()?.toLowerCase();
+    const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : ext === "gif" ? "image/gif" : "image/jpeg";
+    reply.header("Content-Type", mime);
+    reply.header("Cache-Control", "public, max-age=86400");
+    return reply.send(buf);
+  } catch {
+    return reply.code(404).send({ error: "Not found" });
+  }
+});
 
 // Stats for admin dashboard
 app.get("/api/admin/stats", async (req, reply) => {
