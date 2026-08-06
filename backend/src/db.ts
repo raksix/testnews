@@ -404,6 +404,7 @@ export async function seedCommentsForNews(
   let parentIds: string[] = [];
   if (docs.length) {
     const inserted = await db.collection<Comment>("comments").insertMany(docs as any);
+    await redistributePostComments(db, newsSlug, publishedAt);
     parentIds = Object.values(inserted.insertedIds).map((id) => id.toString());
   }
 
@@ -444,6 +445,38 @@ export async function seedCommentsForNews(
 
 // Called periodically: recent posts (last 48h) slowly accumulate new
 // comments + replies so discussion grows naturally over time.
+
+// Spread a post's comments evenly across the post's lifetime so they
+// never look like they were all posted "just now". Also fixes any
+// future-dated timestamps (e.g. from clock drift).
+async function redistributePostComments(
+  db: any,
+  newsSlug: string,
+  publishedAt?: string
+): Promise<void> {
+  const comments = await db
+    .collection("comments")
+    .find({ newsSlug })
+    .sort({ createdAt: 1 })
+    .toArray();
+  if (comments.length < 2) return;
+  const pub = publishedAt ? new Date(publishedAt).getTime() : Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const start = Math.max(pub, Date.now() - 21 * 24 * 60 * 60 * 1000);
+  // newest comment 30-90 min ago, so the thread looks alive but not bunched
+  const end = Date.now() - (30 + Math.floor(Math.random() * 60)) * 60 * 1000;
+  // span must never exceed (end - start): otherwise late comments
+  // land in the future (e.g. when server clock drifts or a post is
+  // fresh with many comments). New posts keep a tight but valid window.
+  const span = Math.max(1, end - start);
+  const bulk = comments.map((c: Comment, i: number) => ({
+    updateOne: {
+      filter: { _id: c._id },
+      update: { $set: { createdAt: new Date(start + (span / comments.length) * (i + 0.5)).toISOString() } },
+    },
+  }));
+  await db.collection("comments").bulkWrite(bulk);
+}
+
 export async function addGradualComments(): Promise<number> {
   const db = await getDb();
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
@@ -459,6 +492,11 @@ export async function addGradualComments(): Promise<number> {
     const newsSlug = n.slug;
     const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
     if (existing > 60) continue;
+    if (existing < 2) {
+      // a brand-new post: don't pile comments on it, skip entirely
+      await redistributePostComments(db, newsSlug, n.publishedAt);
+      continue;
+    }
     const parentCount = 1 + Math.floor(Math.random() * 2);
     const docs: Comment[] = [];
     // Comments land within the last ~12h, spaced 5-15min apart so
@@ -518,6 +556,8 @@ export async function addGradualComments(): Promise<number> {
       }
       if (replyDocs.length) await db.collection<Comment>("comments").insertMany(replyDocs as any);
       added += docs.length + replyDocs.length;
+      // keep this post's comments spread across its lifetime
+      await redistributePostComments(db, newsSlug, n.publishedAt);
     }
   }
   return added;
