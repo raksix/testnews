@@ -326,39 +326,6 @@ const COMMENT_NAMES = [
   "Sophie", "Andrew", "Olivia", "Thomas", "Emma", "Robert", "Grace",
 ];
 
-const COMMENT_TEXTS = [
-  "This is actually a really important development. Thanks for covering it.",
-  "Finally some proper journalism on this topic.",
-  "I can't believe this hasn't gotten more attention.",
-  "The details here are a bit thin, but interesting nonetheless.",
-  "Wait, is this confirmed by official sources?",
-  "Great analysis. This puts things in perspective.",
-  "About time someone reported this properly.",
-  "I've been following this for weeks, good to see it summarized.",
-  "This will have bigger consequences than people realize.",
-  "Interesting take, though I'd like to see more data.",
-  "The headline says it all, honestly.",
-  "This comment section is more balanced than I expected.",
-  "Sharing this with my colleagues right now.",
-  "One of the better articles I've read on this subject.",
-  "Can we get a follow-up on this? Would love more context.",
-  "Not sure I agree with the conclusion, but the reporting is solid.",
-  "This is exactly why I read this site.",
-  "Wild stuff. The next few months will be telling.",
-  "Good breakdown. Easy to understand even for non-experts.",
-  "I was just talking about this yesterday!",
-  "The sources check out. Reliable piece.",
-  "This deserves way more coverage.",
-  "Honestly refreshing to see unbiased reporting.",
-  "Bookmarked. Very useful summary.",
-  "The comments here are actually civil, nice change.",
-  "Strong piece. Keep up the good work.",
-  "This changes the picture significantly.",
-  "I'll be watching how this develops.",
-  "Excellent breakdown, very clear and concise.",
-  "Someone had to say this. Glad it was this outlet.",
-];
-
 // Seed 8-20 realistic comments for a news article, spread over the last 48h.
 // ~60% generic, ~40% tailored to the article's topic + category.
 const STOPWORDS = new Set([
@@ -369,68 +336,6 @@ const STOPWORDS = new Set([
   "new","first","last","more","most","than","so","if","can","will","would","could",
   "has","have","had","do","does","did","who","what","when","where","why","how",
 ]);
-
-const REPLY_POOL = [
-  "Actually, I disagree. The data tells a different story.",
-  "That's a fair point, but you're missing the bigger picture.",
-  "Exactly what I've been saying all along.",
-  "No way. Have you even read the full report?",
-  "I see it differently — the sources here are solid.",
-  "You clearly haven't looked at the details.",
-  "That take is way off, honestly.",
-  "Calm down, it's not that simple.",
-  "I respect your opinion, but the facts say otherwise.",
-  "Finally someone with sense in this thread.",
-  "You're right about that, but the second part is wrong.",
-  "This is exactly the kind of comment that derails the discussion.",
-  "Prove it. Show me where that's stated in the article.",
-  "We get it, you have an opinion. So does everyone else.",
-  "Saying 'fake news' isn't an argument, you know.",
-  "I checked the original source — your claim doesn't hold up.",
-  "Genuine question: what would change your mind on this?",
-  "Disagree respectfully, but I think you're underestimating this.",
-  "100% agreed. Well put.",
-  "Not sure I'd go that far, but interesting perspective.",
-];
-
-const CATEGORY_COMMENTS: Record<string, string[]> = {
-  Technology: [
-    "The engineering behind this is genuinely impressive.",
-    "As a developer, I can tell this took serious work to pull off.",
-    "Tech moves fast, but this is a real step forward.",
-    "Curious what the open-source community thinks of this one.",
-  ],
-  Business: [
-    "Markets are definitely going to react to this one.",
-    "The analysts are going to have a field day with this.",
-    "Smart move, but the margins will tell the real story.",
-    "This is what happens when leadership plans ahead.",
-  ],
-  Sports: [
-    "The form this season has been something else.",
-    "The coaching staff deserves a lot of credit here.",
-    "That was a performance worth staying up for.",
-    "Injuries aside, the squad depth really showed tonight.",
-  ],
-  Science: [
-    "Fascinating research. Peer review will be key here.",
-    "The methodology looks solid, excited to see replication studies.",
-    "This could open a whole new line of inquiry.",
-    "Science at its best — patient, rigorous, promising.",
-  ],
-  Health: [
-    "The public health impact of this is significant.",
-    "Doctors will be watching the follow-up data closely.",
-    "As someone in healthcare, this matters more than it seems.",
-    "Prevention beats treatment — glad this is getting attention.",
-  ],
-  Entertainment: [
-    "The box office numbers will be interesting to watch.",
-    "Critics are split, but the audience seems to love it.",
-    "The production value alone is worth the hype.",
-    "This one is going to be talked about for a while.",
-  ],
-};
 
 function topicFromTitle(title: string): string {
   const words = title
@@ -458,7 +363,6 @@ export async function seedCommentsForNews(
   const usedNames = new Set<string>();
 
   const topic = title ? topicFromTitle(title) : "";
-  const catPool = (category && CATEGORY_COMMENTS[category]) || [];
   // Topic-aware comment templates
   const topicPool = topic
     ? [
@@ -473,7 +377,7 @@ export async function seedCommentsForNews(
       ]
     : [];
 
-  const pool = [...COMMENT_TEXTS, ...catPool, ...topicPool];
+  const pool = topicPool;
 
   // Realistic spread: newest comment ~now, each one 5-15min earlier.
   let lastTs = Date.now() - Math.floor(Math.random() * 30 * 60 * 1000);
@@ -558,10 +462,23 @@ export async function addGradualComments(): Promise<number> {
     // they look human (never bunched up at the same timestamp).
     let lastTs = Date.now() - Math.floor(Math.random() * 10 * 60 * 1000);
     const floor = Math.max(new Date(n.publishedAt).getTime(), Date.now() - 12 * 60 * 60 * 1000);
+    const gTopic = topicFromTitle(n.title);
+    const gPool = gTopic
+      ? [
+          `The situation around ${gTopic} is way more complex than this article suggests.`,
+          `I've been following ${gTopic} closely and this summary is spot on.`,
+          `Finally someone covering ${gTopic} properly.`,
+          `This ${gTopic} story is going to have ripple effects.`,
+          `Not sure everyone realizes how big ${gTopic} really is.`,
+          `Great context on ${gTopic} — the details matter here.`,
+          `Living through ${gTopic} right now and this is accurate.`,
+          `More reporting like this on ${gTopic}, please.`,
+        ]
+      : [];
     for (let i = 0; i < parentCount; i++) {
       lastTs -= 5 * 60 * 1000 + Math.floor(Math.random() * 10 * 60 * 1000);
       if (lastTs < floor) lastTs = floor;
-      let text = COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)];
+      let text = gPool[Math.floor(Math.random() * gPool.length)] || "Interesting — I'd like to see how this develops.";
       if (i === 0) {
         const ai = await aiComment(n.title, n.content || "");
         if (ai) text = ai;
@@ -581,11 +498,14 @@ export async function addGradualComments(): Promise<number> {
       const replyDocs: Comment[] = [];
       for (let i = 0; i < docs.length; i++) {
         if (Math.random() < 0.3 && ids[i]) {
+          let replyText = gPool[Math.floor(Math.random() * gPool.length)] || "That's a fair point, actually.";
+          const aiReply = await aiComment(n.title, docs[i].content);
+          if (aiReply) replyText = aiReply;
           replyDocs.push({
             newsSlug,
             parentId: ids[i],
             name: COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)],
-            content: REPLY_POOL[Math.floor(Math.random() * REPLY_POOL.length)],
+            content: replyText,
             likes: Math.floor(Math.random() * 8),
             createdAt: new Date(
               Math.min(Date.now(), new Date(docs[i].createdAt).getTime() + (5 + Math.floor(Math.random() * 60)) * 60 * 1000)
