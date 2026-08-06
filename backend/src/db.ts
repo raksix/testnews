@@ -420,11 +420,14 @@ export async function seedCommentsForNews(
       let name = COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)];
       if (usedReplyNames.has(name)) name = name + " " + Math.floor(Math.random() * 99);
       usedReplyNames.add(name);
+      let replyText = pool[Math.floor(Math.random() * pool.length)] || "That's a fair point, actually.";
+      const aiReply = await aiComment(title || "", parent.content);
+      if (aiReply) replyText = aiReply;
       replyDocs.push({
         newsSlug,
         parentId,
         name,
-        content: REPLY_POOL[Math.floor(Math.random() * REPLY_POOL.length)],
+        content: replyText,
         likes: Math.floor(Math.random() * 12),
         createdAt: new Date(
           Math.min(
