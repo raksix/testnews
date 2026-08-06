@@ -148,7 +148,8 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   // Use custom prompt from settings (with template placeholders)
   const template =
     settings.reddit.prompt ||
-    `You are a news editor for an English news website. Write a professional, detailed news article from this source.\n\nPOST TITLE: {title}\n\nRULES:\n- Write in {language}\n- Create an engaging news headline (max 15 words)\n- Write a 3-4 sentence summary (excerpt)\n- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings)\n- Be factual and neutral — do NOT mention Reddit\n- Category: World, Technology, Business, Sports, Science, Health, or Entertainment\n- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story\n\nRespond with ONLY valid JSON:\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
+    `You are a news editor for an English news website. Write a professional, detailed news article from this source.\n\nPOST TITLE: {title}\n\nRULES:\n- Write in {language}\n- Create an engaging news headline (max 15 words)\n- Write a 3-4 sentence summary (excerpt)\n- Write a DETAILED article of AT LEAST 1000 WORDS (4-8 paragraphs with ## headings)\n- Be factual and neutral — do NOT mention Reddit\n- Category: World, Technology, Business, Sports, Science, Health, or Entertainment
+- IMPORTANT: stories about actors, celebrities, movies, music, TV shows, Hollywood or awards belong to Entertainment — never Technology/Science/Business\n- Image query: 3-6 word search for a real news photo of THIS SPECIFIC story\n\nRespond with ONLY valid JSON:\n{"title":"...","excerpt":"...","content":"...","category":"...","imageQuery":"..."}`;
 
   const prompt = template
     .replaceAll("{title}", title)

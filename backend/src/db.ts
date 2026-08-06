@@ -74,7 +74,7 @@ export async function listNews(
   offset = 0
 ): Promise<NewsItem[]> {
   const db = await getDb();
-  const filter = category ? { category } : {};
+  const filter = category ? { category: { $regex: `^${category}$`, $options: "i" } } : {};
   const items = await db
     .collection<NewsItem>("news")
     .find(filter)
