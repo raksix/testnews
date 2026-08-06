@@ -139,7 +139,7 @@ export async function createNews(
     updatedAt: new Date().toISOString(),
   };
   const result = await db.collection<NewsItem>("news").insertOne(doc as any);
-  seedCommentsForNews(doc.slug, doc.title, doc.category, doc.publishedAt).catch(() => {});
+  seedCommentsForNews(doc.slug, doc.title, doc.category, doc.publishedAt, data.content).catch(() => {});
   return serialize({ ...doc, _id: result.insertedId });
 }
 
@@ -444,14 +444,16 @@ export async function seedCommentsForNews(
   newsSlug: string,
   title?: string,
   category?: string,
-  publishedAt?: string
+  publishedAt?: string,
+  content?: string
 ): Promise<void> {
   const db = await getDb();
   const existing = await db.collection<Comment>("comments").countDocuments({ newsSlug });
   if (existing > 0) return;
-  const count = 8 + Math.floor(Math.random() * 13); // 8-20
-  const base = publishedAt ? new Date(publishedAt).getTime() : Date.now() - 48 * 60 * 60 * 1000;
-  const now = Math.min(Date.now(), base + 48 * 60 * 60 * 1000);
+  // Don't flood every post with comments — 60% of posts get none,
+  // the rest get only a handful, spread out like real readers.
+  if (Math.random() < 0.6) return;
+  const count = 2 + Math.floor(Math.random() * 3); // 2-4
   const docs: Comment[] = [];
   const usedNames = new Set<string>();
 
@@ -473,15 +475,26 @@ export async function seedCommentsForNews(
 
   const pool = [...COMMENT_TEXTS, ...catPool, ...topicPool];
 
+  // Realistic spread: newest comment ~now, each one 5-15min earlier.
+  let lastTs = Date.now() - Math.floor(Math.random() * 30 * 60 * 1000);
+  const floor = publishedAt ? new Date(publishedAt).getTime() : Date.now() - 48 * 60 * 60 * 1000;
   for (let i = 0; i < count; i++) {
     let name = COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)];
     if (usedNames.has(name)) name = name + " " + Math.floor(Math.random() * 99);
     usedNames.add(name);
+    let text = pool[Math.floor(Math.random() * pool.length)];
+    // First comment is AI-generated from the actual article content
+    if (i === 0) {
+      const ai = await aiComment(title || "", content || "");
+      if (ai) text = ai;
+    }
+    lastTs -= 5 * 60 * 1000 + Math.floor(Math.random() * 10 * 60 * 1000);
+    if (lastTs < floor) lastTs = floor;
     docs.push({
       newsSlug,
       name,
-      content: pool[Math.floor(Math.random() * pool.length)],
-      createdAt: new Date(base + Math.floor(Math.random() * Math.max(1, now - base))).toISOString(),
+      content: text,
+      createdAt: new Date(lastTs).toISOString(),
     });
   }
   let parentIds: string[] = [];
@@ -529,7 +542,7 @@ export async function addGradualComments(): Promise<number> {
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const recent = await db
     .collection<NewsItem>("news")
-    .find({ publishedAt: { $gte: since } }, { projection: { slug: 1, title: 1, category: 1, publishedAt: 1 } })
+    .find({ publishedAt: { $gte: since } }, { projection: { slug: 1, title: 1, category: 1, publishedAt: 1, content: 1 } })
     .limit(30)
     .toArray();
   if (recent.length === 0) return 0;
@@ -548,10 +561,15 @@ export async function addGradualComments(): Promise<number> {
     for (let i = 0; i < parentCount; i++) {
       lastTs -= 5 * 60 * 1000 + Math.floor(Math.random() * 10 * 60 * 1000);
       if (lastTs < floor) lastTs = floor;
+      let text = COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)];
+      if (i === 0) {
+        const ai = await aiComment(n.title, n.content || "");
+        if (ai) text = ai;
+      }
       docs.push({
         newsSlug,
         name: COMMENT_NAMES[Math.floor(Math.random() * COMMENT_NAMES.length)],
-        content: COMMENT_TEXTS[Math.floor(Math.random() * COMMENT_TEXTS.length)],
+        content: text,
         likes: Math.floor(Math.random() * 15),
         createdAt: new Date(lastTs).toISOString(),
       });
@@ -725,4 +743,35 @@ export async function getAnalytics() {
       createdAt: r.createdAt,
     })),
   };
+}
+
+// ─── AI comment generation (via OmniRoute OpenAI-compatible API) ───
+const LLM_URL = process.env.LLM_URL || "https://omniroute.fermag.com.tr/v1/chat/completions";
+const LLM_MODEL = process.env.LLM_MODEL || "auto/best-coding";
+
+export async function aiComment(title: string, content?: string): Promise<string | null> {
+  try {
+    const r = await fetch(LLM_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        stream: false,
+        max_tokens: 160,
+        temperature: 1.05,
+        messages: [
+          {
+            role: "user",
+            content: `You are a regular reader commenting on a news article.\n\nTITLE: ${title}\n${content ? `ARTICLE: ${content.slice(0, 1200)}` : ""}\n\nWrite ONE short comment (max 140 characters) that a real reader would post on this article. It must reference the actual topic of the article. Natural, varied, human tone — opinionated, skeptical, curious or personal. No emojis, no hashtags, no quotation marks around the text, no "as an AI". Reply with only the comment text.`,
+          },
+        ],
+      }),
+    });
+    if (!r.ok) return null;
+    const d = (await r.json()) as any;
+    const text = d?.choices?.[0]?.message?.content?.trim();
+    return text && text.length > 10 && text.length < 300 ? text : null;
+  } catch {
+    return null;
+  }
 }
