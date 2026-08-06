@@ -4,6 +4,7 @@ import { fetchNews, imgUrl, type NewsItem } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
 const SITE = "https://newsluma.com";
 import CategorySlider from "../../components/CategorySlider";
+import CategoryFeed from "../../components/CategoryFeed";
 export const dynamic = "force-dynamic";
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -75,39 +76,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         ))}
       </div>
 
-      {/* Diğer haberler — 3'lü grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rest.slice(6).map((item: NewsItem) => (
-          <Link key={item.id || item.slug} href={`/news/${item.slug}`} className="group block rounded-lg overflow-hidden border border-borderc bg-surface2/40 hover:border-brand/50 hover:shadow-lg hover:shadow-brand/5 transition">
-            <div className="relative">
-              {item.image ? (
-                <div className="h-44 overflow-hidden">
-                  <img src={imgUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                </div>
-              ) : (
-                <div className="h-44 bg-gradient-to-br from-borderc to-surface2 flex items-center justify-center">
-                  <span className="text-2xl font-black text-brand">{item.category.charAt(0)}</span>
-                </div>
-              )}
-              <span className="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider">{item.category}</span>
-            </div>
-            <div className="p-4">
-              <h3 className="text-[15px] font-bold text-textc group-hover:text-brand transition leading-snug line-clamp-3">{item.title}</h3>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-borderc">
-                <span className="text-[11px] text-mutedc">By {item.author}</span>
-                <span className="text-[11px] text-brand font-semibold">{formatDate(item.publishedAt)}</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {news.length === 0 && (
-        <div className="text-center py-20">
-          <p className="text-mutedc">No articles in this category yet.</p>
-          <Link href="/" className="text-brand text-sm font-semibold mt-3 inline-block">← Back to Home</Link>
-        </div>
-      )}
-    </div>
+      {/* Diğer haberler — sonsuz liste */}
+      <CategoryFeed category={name} initial={rest.slice(6)} />    </div>
   );
 }
