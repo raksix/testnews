@@ -462,8 +462,14 @@ async function redistributePostComments(
   if (comments.length < 2) return;
   const pub = publishedAt ? new Date(publishedAt).getTime() : Date.now() - 14 * 24 * 60 * 60 * 1000;
   const start = Math.max(pub, Date.now() - 21 * 24 * 60 * 60 * 1000);
-  // newest comment 30-90 min ago, so the thread looks alive but not bunched
-  const end = Date.now() - (30 + Math.floor(Math.random() * 60)) * 60 * 1000;
+  // newest comment 30-90 min ago, so the thread looks alive but not bunched.
+  // For fresh posts (publish time close to now) push end up so comments
+  // still spread over the post's short life instead of piling on one second.
+  const minEnd = start + comments.length * 3 * 60 * 1000;
+  const end = Math.min(
+    Math.max(Date.now() - (30 + Math.floor(Math.random() * 60)) * 60 * 1000, minEnd),
+    Date.now() - 2 * 60 * 1000
+  );
   // span must never exceed (end - start): otherwise late comments
   // land in the future (e.g. when server clock drifts or a post is
   // fresh with many comments). New posts keep a tight but valid window.
