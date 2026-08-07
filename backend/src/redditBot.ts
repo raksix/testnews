@@ -246,6 +246,36 @@ export interface FetchResult {
   errors: string[];
 }
 
+// Crossposts of the same story arrive under different post IDs, so
+// ID-based dedup misses them. Normalize titles to their first 4
+// significant words and skip anything we've already published.
+const titleKey = (t: string) =>
+  t
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 3)
+    .slice(0, 4)
+    .join(" ");
+
+// Load title keys of the most recent articles once per run.
+async function recentTitleKeys(limit = 200): Promise<Set<string>> {
+  const { getDb } = await import("./db.js");
+  const db = await getDb();
+  const recent = await db
+    .collection("news")
+    .find({}, { projection: { title: 1 } })
+    .sort({ publishedAt: -1 })
+    .limit(limit)
+    .toArray();
+  const keys = new Set<string>();
+  for (const n of recent) {
+    const k = titleKey(n.title);
+    if (k) keys.add(k);
+  }
+  return keys;
+}
+
 export async function runRedditFetch(): Promise<FetchResult> {
   const settings = await getSettings();
   const cfg = settings.reddit;
@@ -253,6 +283,7 @@ export async function runRedditFetch(): Promise<FetchResult> {
   if (!cfg.enabled) return { fetched: 0, created: 0, skipped: 0, errors: ["Disabled in settings"] };
 
   const result: FetchResult = { fetched: 0, created: 0, skipped: 0, errors: [] };
+  const seenTitles = await recentTitleKeys();
 
   for (const sub of cfg.subreddits) {
     try {
@@ -277,6 +308,12 @@ export async function runRedditFetch(): Promise<FetchResult> {
           result.skipped++;
           continue;
         }
+        const tKey = titleKey(post.title);
+        if (tKey && seenTitles.has(tKey)) {
+          result.skipped++;
+          continue;
+        }
+        seenTitles.add(tKey);
 
         try {
           const rewritten = await aiRewrite(post.title, post.selftext || "", sub);
