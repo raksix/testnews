@@ -376,6 +376,7 @@ export async function runRedditFetch(): Promise<FetchResult> {
 
   const result: FetchResult = { fetched: 0, created: 0, skipped: 0, errors: [] };
   const seenTitles = await recentTitleKeys();
+  const log = (msg: string) => console.log(`[redditBot] ${new Date().toISOString()} ${msg}`);
 
   for (const sub of cfg.subreddits) {
     try {
@@ -394,15 +395,20 @@ export async function runRedditFetch(): Promise<FetchResult> {
         const ageMs = Date.now() - post.created_utc * 1000;
         if (ageMs > cfg.maxAgeHours * 3600_000) continue;
         // Never process NSFW posts at all (Reddit's own flag)
-        if (post.over_18) continue;
+        if (post.over_18) {
+          log(`SKIP ${sub} ${post.id} → over_18 (NSFW)`);
+          continue;
+        }
 
         if (await redditPostExists(post.id)) {
           result.skipped++;
+          log(`SKIP ${sub} ${post.id} → already published (redditId)`);
           continue;
         }
         const tKey = titleKey(post.title);
         if (tKey && seenTitles.has(tKey)) {
           result.skipped++;
+          log(`SKIP ${sub} ${post.id} → duplicate titleKey`);
           continue;
         }
         seenTitles.add(tKey);
@@ -415,8 +421,10 @@ export async function runRedditFetch(): Promise<FetchResult> {
           const model = (await getSettings()).reddit.model;
           if (await isDuplicateStory(rewritten.title, rewritten.excerpt, model)) {
             result.skipped++;
+            log(`SKIP ${sub} ${post.id} → AI duplicate story (${rewritten.title.slice(0, 50)})`);
             continue;
           }
+          log(`AI ${sub} ${post.id} → rewrote OK: ${rewritten.title.slice(0, 60)}`);
 
           // Search image if AI provided a query and post has no image
           let imageUrl = "";
@@ -458,8 +466,10 @@ export async function runRedditFetch(): Promise<FetchResult> {
           );
 
           result.created++;
+          log(`CREATE ${sub} ${post.id} → ${rewritten.title.slice(0, 60)}`);
         } catch (err) {
           result.errors.push(`[${sub}] ${err instanceof Error ? err.message : err}`);
+          log(`ERROR ${sub} ${post.id} → ${err instanceof Error ? err.message : err}`);
         }
       }
     } catch (err) {
