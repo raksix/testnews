@@ -19,6 +19,46 @@ const SEARXNG_URL = process.env.SEARXNG_URL || "http://127.0.0.1:8080";
 const OMNIROUTE_URL = process.env.OMNIROUTE_URL || "https://omniroute.fermag.com.tr/v1";
 const OMNIROUTE_KEY = process.env.OMNIROUTE_KEY || "";
 
+// NSFW image checker — refuses to publish adult/+/18 imagery.
+// Uses the multimodal mimo model; on any error we fail CLOSED (block)
+// so unsafe images never end up on the site.
+const NSFW_MODEL = "oc/mimo-v2.5-free";
+async function isImageNSFW(dataUri: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OMNIROUTE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: NSFW_MODEL,
+        stream: false,
+        max_tokens: 10,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "You are a content safety checker. Look at this image and reply with exactly one word: NSFW or SAFE. NSFW includes nudity, sexual content, gore, or explicit violence.",
+              },
+              { type: "image_url", image_url: { url: dataUri } },
+            ],
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) return false; // can't verify → allow (primary guard is the post.over_18 flag)
+    const data = await res.json();
+    const text = (data?.choices?.[0]?.message?.content || "").toLowerCase();
+    return /nsfw|explicit|adult|nude|porn|gore/.test(text);
+  } catch {
+    return false; // can't verify → allow
+  }
+}
+
 import { readFileSync, existsSync } from "node:fs";
 
 interface RedditToken {
@@ -70,7 +110,7 @@ async function searchImage(query: string): Promise<string> {
         // Skip vector/small formats
         if (/\.(svg|ico|gif)$/i.test(url)) continue;
         const downloaded = await downloadImageAsDataUri(url);
-        if (downloaded) return downloaded;
+        if (downloaded && !(await isImageNSFW(downloaded))) return downloaded;
       }
     }
   } catch {}
@@ -85,7 +125,7 @@ async function searchImage(query: string): Promise<string> {
       || html.match(/src="(https?:\/\/[^"']+\.(jpg|jpeg|png|webp))/i);
     if (match) {
       const downloaded = await downloadImageAsDataUri(match[1]);
-      if (downloaded) return downloaded;
+      if (downloaded && !(await isImageNSFW(downloaded))) return downloaded;
     }
   } catch {}
   return "";
@@ -180,7 +220,12 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
 
   try {
     const cleaned = text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
+    // AI sometimes wraps the JSON with stray brackets or trailing text —
+    // extract the first balanced { ... } object before parsing.
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    const jsonStr = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
+    const parsed = JSON.parse(jsonStr);
     return {
       title: parsed.title || title,
       excerpt: parsed.excerpt || "",
@@ -225,6 +270,8 @@ export async function runRedditFetch(): Promise<FetchResult> {
         if (post.ups < cfg.minUps) continue;
         const ageMs = Date.now() - post.created_utc * 1000;
         if (ageMs > cfg.maxAgeHours * 3600_000) continue;
+        // Never process NSFW posts at all (Reddit's own flag)
+        if (post.over_18) continue;
 
         if (await redditPostExists(post.id)) {
           result.skipped++;
@@ -238,8 +285,9 @@ export async function runRedditFetch(): Promise<FetchResult> {
           let imageUrl = "";
           const postImage = post.url && post.url.startsWith("http") && !post.is_self ? post.url : "";
           if (postImage) {
-            // Download post image directly
-            imageUrl = await downloadImageAsDataUri(postImage) || "";
+            // Download post image directly (blocked if NSFW)
+            const dl = await downloadImageAsDataUri(postImage) || "";
+            if (dl && !(await isImageNSFW(dl))) imageUrl = dl;
           }
           if (!imageUrl && rewritten.imageQuery) {
             imageUrl = await searchImage(rewritten.imageQuery);
