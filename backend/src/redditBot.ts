@@ -453,7 +453,7 @@ export async function runRedditFetch(): Promise<FetchResult> {
           const { ObjectId } = await import("mongodb");
           const db = await getDb();
           await db.collection("news").updateOne(
-            { _id: new ObjectId(article._id as string) },
+            { _id: new ObjectId(String(article._id)) },
             { $set: { redditId: post.id, source: "reddit", sourceSubreddit: sub } }
           );
 
