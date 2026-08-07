@@ -162,6 +162,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
       Authorization: `Bearer ${OMNIROUTE_KEY}`,
       "Content-Type": "application/json",
     },
+    signal: AbortSignal.timeout(120_000),
     body: JSON.stringify({
       model,
       messages: [

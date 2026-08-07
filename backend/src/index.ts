@@ -112,7 +112,7 @@ app.get("/api/admin/news", async (req, reply) => {
     .sort({ createdAt: -1 })
     .limit(500)
     .toArray();
-  return { news: items };
+  return { news: items.map((i: any) => ({ ...i, id: i._id?.toString(), _id: i._id?.toString() })) };
 });
 
 // Single article

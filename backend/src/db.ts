@@ -65,7 +65,19 @@ export const CATEGORIES = [
 ] as const;
 
 function serialize(item: NewsItem): NewsItem {
-  return { ...item, id: item._id?.toString() };
+  const obj: any = { ...item };
+  // Ensure id is always set from _id
+  const idVal = (item as any)._id;
+  if (idVal) {
+    const idStr = idVal.toString();
+    obj.id = idStr;
+    // Keep _id as string for consistency (frontend uses _id sometimes)
+    obj._id = idStr;
+  } else if (!obj.id) {
+    // fallback: use slug
+    obj.id = obj.slug;
+  }
+  return obj;
 }
 
 export async function listNews(
