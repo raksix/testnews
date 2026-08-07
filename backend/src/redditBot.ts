@@ -446,11 +446,14 @@ export async function runRedditFetch(): Promise<FetchResult> {
             publishedAt: new Date().toISOString(),
           });
 
-          // Tag source post id for dedup
+          // Tag source post id for dedup. _id comes back as a string
+          // from createNews, so wrap it in ObjectId or the update silently
+          // matches nothing and redditPostExists never works.
           const { getDb } = await import("./db.js");
+          const { ObjectId } = await import("mongodb");
           const db = await getDb();
           await db.collection("news").updateOne(
-            { _id: article._id },
+            { _id: new ObjectId(article._id as string) },
             { $set: { redditId: post.id, source: "reddit", sourceSubreddit: sub } }
           );
 
