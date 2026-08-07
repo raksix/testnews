@@ -209,7 +209,7 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
         { role: "system", content: "You are a professional news editor. Always respond with valid JSON only." },
         { role: "user", content: prompt },
       ],
-      max_tokens: 500000,
+      max_tokens: 4000,
       stream: false,
     }),
   });

@@ -357,14 +357,18 @@ app.post("/api/admin/reddit/fetch", async (req, reply) => {
   if (headers["x-admin-key"] !== ADMIN_KEY) {
     return reply.code(401).send({ error: "Unauthorized" });
   }
-  try {
-    const result = await runRedditFetch();
-    return { result };
-  } catch (err) {
-    return reply.code(500).send({
-      error: err instanceof Error ? err.message : "Reddit fetch failed",
+  // Fire-and-forget: a full run takes 10+ minutes (30 posts x AI rewrite),
+  // so return immediately and let the work continue in the background.
+  runRedditFetch()
+    .then((result) => {
+      app.log.info(
+        `Manual Reddit fetch done: created=${result.created} skipped=${result.skipped} errors=${result.errors.length}`
+      );
+    })
+    .catch((err) => {
+      app.log.error(`Manual Reddit fetch failed: ${err}`);
     });
-  }
+  return { result: { started: true, note: "Running in background" } };
 });
 
 // Available AI models from OmniRoute
