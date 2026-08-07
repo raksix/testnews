@@ -218,25 +218,57 @@ async function aiRewrite(title: string, selftext: string, subreddit: string): Pr
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content || "";
 
+  // Extract the first balanced { ... } object using a brace counter.
+  // AI wraps JSON in prose/code fences; naive first/last-brace slicing
+  // grabs wrong objects when braces appear inside string content.
+  const extractBalancedJson = (raw: string): string | null => {
+    const start = raw.indexOf("{");
+    if (start < 0) return null;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < raw.length; i++) {
+      const c = raw[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (c === "\\") escaped = true;
+        else if (c === '"') inString = false;
+        continue;
+      }
+      if (c === '"') inString = true;
+      else if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) return raw.slice(start, i + 1);
+      }
+    }
+    return null;
+  };
+
+  const jsonStr = extractBalancedJson(text.replace(/```json|```/g, ""));
+  if (!jsonStr) throw new Error("AI output contains no JSON object");
+
+  let parsed: any;
   try {
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    // AI sometimes wraps the JSON with stray brackets or trailing text —
-    // extract the first balanced { ... } object before parsing.
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    const jsonStr = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
-    const parsed = JSON.parse(jsonStr);
-    return {
-      title: parsed.title || title,
-      excerpt: parsed.excerpt || "",
-      content: parsed.content || "",
-      category: parsed.category || "Technology",
-      imageQuery: parsed.imageQuery || "",
-    };
+    parsed = JSON.parse(jsonStr);
   } catch {
-    // Fallback: use raw output as content
-    return { title, excerpt: "", content: text, category: "Technology", imageQuery: "" };
+    throw new Error("AI output: JSON parse failed");
   }
+
+  const outTitle =
+    typeof parsed?.title === "string" && parsed.title.trim() ? parsed.title.trim() : title;
+  const excerpt = typeof parsed?.excerpt === "string" ? parsed.excerpt.trim() : "";
+  const content = typeof parsed?.content === "string" ? parsed.content.trim() : "";
+  const category = typeof parsed?.category === "string" ? parsed.category.trim() : "Technology";
+  const imageQuery = typeof parsed?.imageQuery === "string" ? parsed.imageQuery.trim() : "";
+
+  // Publish-time validation: a real news item needs a headline and a
+  // meaningful body. Reject thin/broken output so malformed content
+  // never reaches the site — the post is skipped instead.
+  if (!outTitle || content.length < 200) {
+    throw new Error("AI output: missing title or content too short");
+  }
+  return { title: outTitle, excerpt, content, category, imageQuery };
 }
 
 export interface FetchResult {
