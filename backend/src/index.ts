@@ -359,15 +359,9 @@ app.post("/api/admin/reddit/fetch", async (req, reply) => {
   }
   // Fire-and-forget: a full run takes 10+ minutes (30 posts x AI rewrite),
   // so return immediately and let the work continue in the background.
-  runRedditFetch()
-    .then((result) => {
-      app.log.info(
-        `Manual Reddit fetch done: created=${result.created} skipped=${result.skipped} errors=${result.errors.length}`
-      );
-    })
-    .catch((err) => {
-      app.log.error(`Manual Reddit fetch failed: ${err}`);
-    });
+  // Share the global guard so manual + scheduled runs can't overlap
+  // and publish the same cross-posted story twice.
+  scheduledFetch();
   return { result: { started: true, note: "Running in background" } };
 });
 
