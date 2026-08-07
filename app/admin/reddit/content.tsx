@@ -97,6 +97,11 @@ export default function RedditBotContent({ apiKey }: { apiKey: string }) {
       const data = await res.json();
       if (data.result) {
         const r = data.result;
+        if (r.started) {
+          setFetchResult(`Fetch started — running in background`);
+          setMsg({ type: "ok", text: "Reddit fetch started in background" });
+          return;
+        }
         setFetchResult(`Fetched: ${r.fetched} | Created: ${r.created} | Skipped: ${r.skipped} | Errors: ${r.errors.length}`);
         if (r.errors.length > 0) setFetchResult((s) => `${s}\n${r.errors.join("\n")}`);
         setMsg({ type: "ok", text: `Created ${r.created} articles from Reddit` });
