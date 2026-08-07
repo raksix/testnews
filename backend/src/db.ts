@@ -19,7 +19,7 @@ export async function saveImageToFile(dataUri: string, slug: string): Promise<st
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  "mongodb://admin:admin123@127.0.0.1:27017/?authSource=admin";
+  "mongodb://admin:N3wsluma2026SecureXy@127.0.0.1:27017/?authSource=admin";
 const MONGODB_DB = process.env.MONGODB_DB || "testnews";
 
 const client = new MongoClient(MONGODB_URI, {
