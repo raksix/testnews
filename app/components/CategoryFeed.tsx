@@ -28,7 +28,13 @@ export default function CategoryFeed({ category, initial }: { category: string; 
           if (news.length === 0) {
             setDone(true);
           } else {
-            setItems((prev) => [...prev, ...news]);
+            // Dedupe: offset pagination shifts when the bot inserts new
+            // articles mid-scroll, so the same story can arrive twice.
+            setItems((prev) => {
+              const seen = new Set(prev.map((p) => p._id || p.slug));
+              const fresh = news.filter((n) => !seen.has(n._id || n.slug));
+              return fresh.length ? [...prev, ...fresh] : prev;
+            });
             offsetRef.current += news.length;
           }
         } catch {
