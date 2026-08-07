@@ -308,6 +308,66 @@ async function recentTitleKeys(limit = 200): Promise<Set<string>> {
   return keys;
 }
 
+// AI-based story dedup: the rewrite step rephrases headlines, so
+// keyword matching misses stories like "Pluto's Heart Glacier Leaks…"
+// vs "Pluto's Famous Glacial Heart…". Ask the model whether the new
+// article covers the same story as any recent headline. Fail-open:
+// if the model can't answer, let the article through (titleKey already
+// caught exact duplicates).
+async function isDuplicateStory(
+  aiTitle: string,
+  aiExcerpt: string,
+  model: string,
+  recentCount = 40
+): Promise<boolean> {
+  try {
+    const { getDb } = await import("./db.js");
+    const db = await getDb();
+    const recent = await db
+      .collection("news")
+      .find({}, { projection: { title: 1 } })
+      .sort({ publishedAt: -1 })
+      .limit(recentCount)
+      .toArray();
+    if (recent.length === 0) return false;
+    const list = recent
+      .map((n, i) => `${i + 1}. ${n.title}`)
+      .join("\n");
+    const res = await fetch(`${OMNIROUTE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OMNIROUTE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(45_000),
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a duplicate-detection bot. Decide if the NEW story is the SAME story as any item in the EXISTING list (same event, subject, and outcome, even if worded differently). Reply with ONLY one word: DUPLICATE or NEW.",
+          },
+          {
+            role: "user",
+            content: `EXISTING headlines:\n${list}\n\nNEW headline: ${aiTitle}\nNEW excerpt: ${aiExcerpt.slice(0, 200)}\n\nDUPLICATE or NEW?`,
+          },
+        ],
+        max_tokens: 200,
+        stream: false,
+      }),
+    });
+    if (!res.ok) return false; // can't verify → allow
+    const data = await res.json();
+    const answer = (data?.choices?.[0]?.message?.content || "NEW")
+      .trim()
+      .toUpperCase();
+    return answer.includes("DUPLICATE");
+  } catch {
+    return false; // can't verify → allow
+  }
+}
+
 export async function runRedditFetch(): Promise<FetchResult> {
   const settings = await getSettings();
   const cfg = settings.reddit;
@@ -349,6 +409,14 @@ export async function runRedditFetch(): Promise<FetchResult> {
 
         try {
           const rewritten = await aiRewrite(post.title, post.selftext || "", sub);
+
+          // AI-based story dedup: catches rephrased duplicates that
+          // keyword matching can't (e.g. Pluto glacier stories).
+          const model = (await getSettings()).reddit.model;
+          if (await isDuplicateStory(rewritten.title, rewritten.excerpt, model)) {
+            result.skipped++;
+            continue;
+          }
 
           // Search image if AI provided a query and post has no image
           let imageUrl = "";
