@@ -343,7 +343,7 @@ app.get("/api/admin/reddit/logs", async (req, reply) => {
   try {
     const { execSync } = await import("node:child_process");
     // Pull recent bot log lines from PM2
-    const out = execSync('pm2 logs testnews-backend --lines 40 --nostream 2>/dev/null | grep -iE "scheduled|fetch|created|error" | tail -30', { encoding: "utf8", timeout: 8000 });
+    const out = execSync('pm2 logs testnews-backend --lines 80 --nostream 2>/dev/null | grep -iE "redditBot|scheduled|fetch|created|error" | tail -50', { encoding: "utf8", timeout: 8000 });
     const lines = out.split("\n").filter(Boolean);
     return { logs: lines.length ? lines.slice(-30) : ["No recent bot activity — waiting for next fetch"] };
   } catch {
