@@ -346,7 +346,7 @@ async function isDuplicateStory(
           {
             role: "system",
             content:
-              "You are a duplicate-detection bot. Decide if the NEW story is the SAME story as any item in the EXISTING list (same event, subject, and outcome, even if worded differently). Reply with ONLY one word: DUPLICATE or NEW.",
+              "You are a duplicate-detection bot. Decide if the NEW story is the SAME story as any item in the EXISTING list (same event, subject, and outcome, even if worded differently). Also treat items that share the same series prefix as duplicates (e.g. multiple 'Why Is That?' or 'The Science of Why' headlines are the same series). Reply with ONLY one word: DUPLICATE or NEW.",
           },
           {
             role: "user",
